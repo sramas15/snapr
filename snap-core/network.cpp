@@ -998,3 +998,66 @@ PNEANet TNEANet::GetSmallGraph() {
   return Net;
 }
 
+TFlt TNEANet::GetWeightOutEdges(const TNodeI& NI, const TStr& attr) {
+  TNode Node = GetNode(NI.GetId());
+  TIntV OutEIdV = Node.OutEIdV;
+  TFlt total = 0;
+  int len = Node.OutEIdV.Len();
+  for (int i = 0; i < len; i++) {
+    total += GetFltAttrDatE(Node.OutEIdV[i], attr);
+  }
+  return total;
+}
+
+bool TNEANet::IsFltAttrE(const TStr& attr) {
+  return (KeyToIndexTypeE.IsKey(attr) && 
+    KeyToIndexTypeE.GetDat(attr).Val1 == FltType);
+}
+
+// Weighted Page Rank -- there are two different implementations (uncomment the desired 2 lines):
+//   Berkhin -- (the correct way) see Algorithm 1 of P. Berkhin, A Survey on PageRank Computing, Internet Mathematics, 2005
+//   iGraph -- iGraph implementation(which treats leaked PageRank in a funny way)
+int TNEANet::GetWeightedPageRank(TIntFltH& PRankH, const TStr& attr, const double& C, const double& Eps, const int& MaxIter) {
+  if (!IsFltAttrE(attr)) return -1;
+  TIntFltH Weights;
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    Weights.AddDat(NI.GetId(), GetWeightOutEdges(NI, attr));
+  }
+
+  const int NNodes = GetNodes();
+  //const double OneOver = 1.0/double(NNodes);
+  PRankH.Gen(NNodes);
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    PRankH.AddDat(NI.GetId(), 1.0/NNodes);
+    //IAssert(NI.GetId() == PRankH.GetKey(PRankH.Len()-1));
+  }
+  TFltV TmpV(NNodes);
+  for (int iter = 0; iter < MaxIter; iter++) {
+    int j = 0;
+    for (TNodeI NI = BegNI(); NI < EndNI(); NI++, j++) {
+      TmpV[j] = 0;
+      for (int e = 0; e < NI.GetInDeg(); e++) {
+        const int InNId = NI.GetInNId(e);
+        const TFlt OutWeight = Weights.GetDat(InNId);
+        int EId = GetEId(InNId, NI.GetId());
+        const TFlt Weight = GetFltAttrDatE(EId, attr);
+        if (OutWeight > 0) {
+          TmpV[j] += PRankH.GetDat(InNId) * Weight / OutWeight; }
+      }
+      TmpV[j] =  C*TmpV[j]; // Berkhin (the correct way of doing it)
+      //TmpV[j] =  C*TmpV[j] + (1.0-C)*OneOver; // iGraph
+    }
+    double diff=0, sum=0, NewVal;
+    for (int i = 0; i < TmpV.Len(); i++) { sum += TmpV[i]; }
+    const double Leaked = (1.0-sum) / double(NNodes);
+    for (int i = 0; i < PRankH.Len(); i++) { // re-instert leaked PageRank
+      NewVal = TmpV[i] + Leaked; // Berkhin
+      //NewVal = TmpV[i] / sum;  // iGraph
+      diff += fabs(NewVal-PRankH[i]);
+      PRankH[i] = NewVal;
+    }
+    if (diff < Eps) { break; }
+  }
+  return 0;
+}
+
