@@ -47,6 +47,9 @@ template<class PGraph> void GetPageRank(const PGraph& Graph, TIntFltH& PRankH, c
 template<class PGraph> void GetPageRankMP1(const PGraph& Graph, TIntFltH& PRankH, const double& C=0.85, const double& Eps=1e-4, const int& MaxIter=100);
 template<class PGraph> void GetPageRankMP2(const PGraph& Graph, TIntFltH& PRankH, const double& C=0.85, const double& Eps=1e-4, const int& MaxIter=100);
 #endif
+
+int GetWeightedPageRank(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr, const double& C=0.85, const double& Eps=1e-4, const int& MaxIter=100);
+
 /// HITS: Hubs and Authorities
 /// For more info see: http://en.wikipedia.org/wiki/HITS_algorithm)
 template<class PGraph> void GetHits(const PGraph& Graph, TIntFltH& NIdHubH, TIntFltH& NIdAuthH, const int& MaxIter=20);

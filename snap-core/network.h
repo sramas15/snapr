@@ -1687,10 +1687,6 @@ private:
   TStr GetStrAttrDefaultE(const TStr& attribute) const { return StrDefaultsE.IsKey(attribute) ? StrDefaultsE.GetDat(attribute) : (TStr) TStr::GetNullStr(); }
   /// Get Flt edge attribute val.  If not a proper attr, return default.
   TFlt GetFltAttrDefaultE(const TStr& attribute) const { return FltDefaultsE.IsKey(attribute) ? FltDefaultsE.GetDat(attribute) : (TFlt) TFlt::Mn; }
-  /// Get the sum of the weights of all the outgoing edges of the node.
-  TFlt GetWeightOutEdges(const TNodeI& NI, const TStr& attr);
-  /// Check if there is an edge attribute with name attr.
-  bool IsFltAttrE(const TStr& attr);
 
 private:
   TCRef CRef;
@@ -2066,8 +2062,14 @@ public:
   // Returns edge attribute value, converted to Str type.
   TStr GetEdgeAttrValue(const int& EId, const TStrIntPrH::TIter& EdgeHI) const;
 
-  /// Fills PRankH with the weighted PageRank values.
-  int GetWeightedPageRank(TIntFltH& PRankH, const TStr& Attr, const double& C=0.85, const double& Eps=1e-4, const int& MaxIter=100);
+  // Get the sum of the weights of all the outgoing edges of the node.
+  TFlt GetWeightOutEdges(const TNodeI& NI, const TStr& attr);
+  // Check if there is an edge attribute with name attr.
+  bool IsFltAttrE(const TStr& attr);
+  // Check if there is an edge attribute with name attr.
+  bool IsIntAttrE(const TStr& attr);
+  // Check if there is an edge attribute with name attr.
+  bool IsStrAttrE(const TStr& attr);
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANet::GetSmallGraph
   static PNEANet GetSmallGraph();

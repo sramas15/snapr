@@ -179,4 +179,54 @@ void GetEigenVectorCentr(const PUNGraph& Graph, TIntFltH& NIdEigenH, const doubl
   }
 }
 
+int GetWeightedPageRank(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr, const double& C, const double& Eps, const int& MaxIter) {
+  if (!Graph->IsFltAttrE(Attr)) return -1;
+  int mxid = Graph->GetMxNId();
+  TFltV Weights(mxid);
+  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
+    Weights[NI.GetId()] = Graph->GetWeightOutEdges(NI, Attr);
+  }
+
+  /*TIntFltH Weights;
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    Weights.AddDat(NI.GetId(), GetWeightOutEdges(NI, attr));
+  }*/
+
+  const int NNodes = Graph->GetNodes();
+  //const double OneOver = 1.0/double(NNodes);
+  PRankH.Gen(NNodes);
+  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
+    PRankH.AddDat(NI.GetId(), 1.0/NNodes);
+    //IAssert(NI.GetId() == PRankH.GetKey(PRankH.Len()-1));
+  }
+  TFltV TmpV(NNodes);
+  for (int iter = 0; iter < MaxIter; iter++) {
+    int j = 0;
+    for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++, j++) {
+      TmpV[j] = 0;
+      for (int e = 0; e < NI.GetInDeg(); e++) {
+        const int InNId = NI.GetInNId(e);
+        const TFlt OutWeight = Weights[InNId];
+        int EId = Graph->GetEId(InNId, NI.GetId());
+        const TFlt Weight = Graph->GetFltAttrDatE(EId, Attr);
+        if (OutWeight > 0) {
+          TmpV[j] += PRankH.GetDat(InNId) * Weight / OutWeight; }
+      }
+      TmpV[j] =  C*TmpV[j]; // Berkhin (the correct way of doing it)
+      //TmpV[j] =  C*TmpV[j] + (1.0-C)*OneOver; // iGraph
+    }
+    double diff=0, sum=0, NewVal;
+    for (int i = 0; i < TmpV.Len(); i++) { sum += TmpV[i]; }
+    const double Leaked = (1.0-sum) / double(NNodes);
+    for (int i = 0; i < PRankH.Len(); i++) { // re-instert leaked PageRank
+      NewVal = TmpV[i] + Leaked; // Berkhin
+      //NewVal = TmpV[i] / sum;  // iGraph
+      diff += fabs(NewVal-PRankH[i]);
+      PRankH[i] = NewVal;
+    }
+    if (diff < Eps) { break; }
+  }
+  return 0;
+}
+
 }; // namespace TSnap
