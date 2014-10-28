@@ -23,5 +23,5 @@ $(CSNAP)/Snap.o:
 clean:
 	rm -f *.o $(BENCHMARKS) *.exe
 	rm -rf Debug Release
-	rm -rf *.Err demo*.dat
+	rm -rf *.Err benchmark*.dat
 
