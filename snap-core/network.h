@@ -2070,6 +2070,10 @@ public:
   bool IsIntAttrE(const TStr& attr);
   // Check if there is an edge attribute with name attr.
   bool IsStrAttrE(const TStr& attr);
+  // Get Vector for the Flt Attribute attr.
+  TVec<TFlt>& GetFltAttrVecE(const TStr& attr);
+  // Get keyid for edge with id EId.
+  int GetFltKeyIdE(const int& EId);
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANet::GetSmallGraph
   static PNEANet GetSmallGraph();

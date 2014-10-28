@@ -753,7 +753,15 @@ int TNEANet::AddFltAttrDatE(const int& EId, const TFlt& value, const TStr& attr)
     VecOfFltVecsE.Add(NewVec);
   }
   return 0;
-} 
+}
+
+TVec<TFlt>& TNEANet::GetFltAttrVecE(const TStr& attr) {
+  return VecOfFltVecsE[KeyToIndexTypeE.GetDat(attr).Val2];
+}
+
+int TNEANet::GetFltKeyIdE(const int& EId) {
+  return EdgeH.GetKeyId(EId);
+}
 
 TInt TNEANet::GetIntAttrDatN(const int& NId, const TStr& attr) {
   return VecOfIntVecsN[KeyToIndexTypeN.GetDat(attr).Val2][NodeH.GetKeyId(NId)];

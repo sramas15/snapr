@@ -181,16 +181,19 @@ void GetEigenVectorCentr(const PUNGraph& Graph, TIntFltH& NIdEigenH, const doubl
 
 int GetWeightedPageRank(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr, const double& C, const double& Eps, const int& MaxIter) {
   if (!Graph->IsFltAttrE(Attr)) return -1;
-  /*int mxid = Graph->GetMxNId();
-  TFltV Weights(mxid);
-  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
-    Weights[NI.GetId()] = Graph->GetWeightOutEdges(NI, Attr);
-  }*/
 
-  TIntFltH Weights;
+  int mxid = Graph->GetMxNId();
+  TFltV OutWeights(mxid);
+  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
+    OutWeights[NI.GetId()] = Graph->GetWeightOutEdges(NI, Attr);
+  }
+
+  TFltV Weights = Graph->GetFltAttrVecE(Attr);
+
+  /*TIntFltH Weights;
   for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
     Weights.AddDat(NI.GetId(), Graph->GetWeightOutEdges(NI, Attr));
-  }
+  }*/
 
   const int NNodes = Graph->GetNodes();
   //const double OneOver = 1.0/double(NNodes);
@@ -206,9 +209,9 @@ int GetWeightedPageRank(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr,
       TmpV[j] = 0;
       for (int e = 0; e < NI.GetInDeg(); e++) {
         const int InNId = NI.GetInNId(e);
-        const TFlt OutWeight = Weights[InNId];
+        const TFlt OutWeight = OutWeights[InNId];
         int EId = Graph->GetEId(InNId, NI.GetId());
-        const TFlt Weight = Graph->GetFltAttrDatE(EId, Attr);
+        const TFlt Weight = Weights[Graph->GetFltKeyIdE(EId)];
         if (OutWeight > 0) {
           TmpV[j] += PRankH.GetDat(InNId) * Weight / OutWeight; }
       }
