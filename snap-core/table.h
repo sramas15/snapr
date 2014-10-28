@@ -425,17 +425,17 @@ protected:
   void GroupingSanityCheck(const TStr& GroupBy, const TAttrType& AttrType) const;
   /// Groups/hashes by a single column with integer values. ##TTable::GroupByIntCol
   template <class T> void GroupByIntCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
   #ifdef _OPENMP
   /// Groups/hashes by a single column with integer values, using OpenMP multi-threading.
-  void GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping) const;
+  void GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping, TBool UsePhysicalIds = false) const;
   #endif // _OPENMP
   /// Groups/hashes by a single column with float values. Returns hash table with grouping.
   template <class T> void GroupByFltCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
   /// Groups/hashes by a single column with string values. Returns hash table with grouping.
   template <class T> void GroupByStrCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
   /// Template for utility function to update a grouping hash map.
   template <class T> void UpdateGrouping(THash<T,TIntV>& Grouping, T Key, TInt Val) const;
   #ifdef _OPENMP
@@ -515,11 +515,11 @@ protected:
 /***** Utility functions for Group *****/
   /// Helper function for grouping. ##TTable::GroupAux
   void GroupAux(const TStrV& GroupBy, THash<TGroupKey, TPair<TInt, TIntV> >& Grouping, 
-   TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec);
+   TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec, TBool UsePhysicalIds = false);
   #ifdef _OPENMP
-  /// Parallel helper function for grouping.
-  void GroupAuxMP(const TStrV& GroupBy, THashGenericMP<TGroupKey, TPair<TInt, TIntV> >& Grouping, 
-   TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec);
+  /// Parallel helper function for grouping. - we currently don't support such parallel grouping by complex keys
+  //void GroupAuxMP(const TStrV& GroupBy, THashGenericMP<TGroupKey, TPair<TInt, TIntV> >& Grouping, 
+  // TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec, TBool UsePhysicalIds = false);
   #endif // _OPENMP
   /// Stores column for a group. Physical row ids have to be passed.
   void StoreGroupCol(const TStr& GroupColName, const TVec<TPair<TInt, TInt> >& GroupAndRowIds);
@@ -841,7 +841,7 @@ public:
   }
 
   /// Groups rows depending on values of \c GroupBy columns. ##TTable::Group
-  void Group(const TStrV& GroupBy, const TStr& GroupColName, TBool Ordered = true);
+  void Group(const TStrV& GroupBy, const TStr& GroupColName, TBool Ordered = true, TBool UsePhysicalIds = false);
   
   /// Counts number of unique elements. ##TTable::Count
   void Count(const TStr& CountColName, const TStr& Col);
@@ -893,6 +893,11 @@ public:
   void StoreFltCol(const TStr& ColName, const TFltV& ColVals);
   /// Adds entire str column to table.
   void StoreStrCol(const TStr& ColName, const TStrV& ColVals);
+  
+  // Assumption: KeyAttr is a primary key in this table, and FKeyAttr is a primary key in 
+  // the argument table. Equivalent to SQL's: UPDATE this SET UpdateAttr = ReadAttr WHERE KeyAttr = FKeyAttr
+  void UpdateFltFromTable(const TStr& KeyAttr, const TStr& UpdateAttr, const TTable& Table, 
+  	const TStr& FKeyAttr, const TStr& ReadAttr, TFlt DefaultFltVal = 0.0);
 
   /// Returns union of this table with given \c Table.
   PTable Union(const TTable& Table);
@@ -918,6 +923,7 @@ public:
 
   /// Performs columnwise arithmetic operation ##TTable::ColGenericOp
   void ColGenericOp(const TStr& Attr1, const TStr& Attr2, const TStr& ResAttr, TArithOp op);
+  void ColGenericOpMP(TInt ArgColIdx1, TInt ArgColIdx2, TAttrType ArgType1, TAttrType ArgType2, TInt ResColIdx, TArithOp op);
   /// Performs columnwise addition. See TTable::ColGenericOp
   void ColAdd(const TStr& Attr1, const TStr& Attr2, const TStr& ResultAttrName="");
   /// Performs columnwise subtraction. See TTable::ColGenericOp
@@ -1085,20 +1091,27 @@ T TTable::AggregateVector(TVec<T>& V, TAttrAggr Policy) {
 
 template <class T>
 void TTable::GroupByIntCol(const TStr& GroupBy, T& Grouping, 
- const TIntV& IndexSet, TBool All) const {
+ const TIntV& IndexSet, TBool All, TBool UsePhysicalIds) const {
+  TInt IdColIdx = GetColIdx(IdColName);
+  if(!UsePhysicalIds && IdColIdx < 0){
+  	TExcept::Throw("Grouping: Either use physical row ids, or have an id column");
+  }
+ // TO do: add a check if grouping already exists and is valid
   GroupingSanityCheck(GroupBy, atInt);
   if (All) {
      // Optimize for the common and most expensive case - iterate over only valid rows.
     for (TRowIterator it = BegRI(); it < EndRI(); it++) {
-      UpdateGrouping<TInt>(Grouping, it.GetIntAttr(GroupBy), it.GetRowIdx());
+      TInt idx = UsePhysicalIds ? it.GetRowIdx() : it.GetIntAttr(IdColIdx);
+      UpdateGrouping<TInt>(Grouping, it.GetIntAttr(GroupBy), idx);
     }
   } else {
     // Consider only rows in IndexSet.
     for (TInt i = 0; i < IndexSet.Len(); i++) {
       if (IsRowValid(IndexSet[i])) {
         TInt RowIdx = IndexSet[i];
-        const TIntV& Col = IntCols[GetColIdx(GroupBy)];       
-        UpdateGrouping<TInt>(Grouping, Col[RowIdx], RowIdx);
+        const TIntV& Col = IntCols[GetColIdx(GroupBy)];
+        TInt idx = UsePhysicalIds ? RowIdx : IntCols[IdColIdx][RowIdx];       
+        UpdateGrouping<TInt>(Grouping, Col[RowIdx], idx);
       }
     }
   }
@@ -1106,20 +1119,26 @@ void TTable::GroupByIntCol(const TStr& GroupBy, T& Grouping,
 
 template <class T>
 void TTable::GroupByFltCol(const TStr& GroupBy, T& Grouping, 
- const TIntV& IndexSet, TBool All) const {
+ const TIntV& IndexSet, TBool All, TBool UsePhysicalIds) const {
+  TInt IdColIdx = GetColIdx(IdColName);
+  if(!UsePhysicalIds && IdColIdx < 0){
+  	TExcept::Throw("Grouping: Either use physical row ids, or have an id column");
+  }
   GroupingSanityCheck(GroupBy, atFlt);
   if (All) {
      // Optimize for the common and most expensive case - iterate over only valid rows.
     for (TRowIterator it = BegRI(); it < EndRI(); it++) {
-      UpdateGrouping<TFlt>(Grouping, it.GetFltAttr(GroupBy), it.GetRowIdx());
+      TInt idx = UsePhysicalIds ? it.GetRowIdx() : it.GetIntAttr(IdColIdx);
+      UpdateGrouping<TFlt>(Grouping, it.GetFltAttr(GroupBy), idx);
     }
   } else {
     // Consider only rows in IndexSet.
     for (TInt i = 0; i < IndexSet.Len(); i++) {
       if (IsRowValid(IndexSet[i])) {
         TInt RowIdx = IndexSet[i];
-        const TFltV& Col = FltCols[GetColIdx(GroupBy)];       
-        UpdateGrouping<TFlt>(Grouping, Col[RowIdx], RowIdx);
+        const TFltV& Col = FltCols[GetColIdx(GroupBy)];   
+        TInt idx = UsePhysicalIds ? RowIdx : IntCols[IdColIdx][RowIdx];     
+        UpdateGrouping<TFlt>(Grouping, Col[RowIdx], idx);
       }
     }
   }
@@ -1127,12 +1146,17 @@ void TTable::GroupByFltCol(const TStr& GroupBy, T& Grouping,
 
 template <class T>
 void TTable::GroupByStrCol(const TStr& GroupBy, T& Grouping, 
- const TIntV& IndexSet, TBool All) const {
+ const TIntV& IndexSet, TBool All, TBool UsePhysicalIds) const {
+  TInt IdColIdx = GetColIdx(IdColName);
+  if(!UsePhysicalIds && IdColIdx < 0){
+  	TExcept::Throw("Grouping: Either use physical row ids, or have an id column");
+  }
   GroupingSanityCheck(GroupBy, atStr);
   if (All) {
     // Optimize for the common and most expensive case - iterate over all valid rows.
     for (TRowIterator it = BegRI(); it < EndRI(); it++) {
-      UpdateGrouping<TInt>(Grouping, it.GetStrMapByName(GroupBy), it.GetRowIdx());
+      TInt idx = UsePhysicalIds ? it.GetRowIdx() : it.GetIntAttr(IdColIdx);
+      UpdateGrouping<TInt>(Grouping, it.GetStrMapByName(GroupBy), idx);
     }
   } else {
     // Consider only rows in IndexSet.
@@ -1140,7 +1164,8 @@ void TTable::GroupByStrCol(const TStr& GroupBy, T& Grouping,
       if (IsRowValid(IndexSet[i])) {
         TInt RowIdx = IndexSet[i];     
         TInt ColIdx = GetColIdx(GroupBy);
-        UpdateGrouping<TInt>(Grouping, StrColMaps[ColIdx][RowIdx], RowIdx);
+        TInt idx = UsePhysicalIds ? RowIdx : IntCols[IdColIdx][RowIdx];  
+        UpdateGrouping<TInt>(Grouping, StrColMaps[ColIdx][RowIdx], idx);
       }
     }
   }
