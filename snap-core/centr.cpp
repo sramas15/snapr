@@ -182,13 +182,15 @@ void GetEigenVectorCentr(const PUNGraph& Graph, TIntFltH& NIdEigenH, const doubl
 int GetWeightedPageRank(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr, const double& C, const double& Eps, const int& MaxIter) {
   if (!Graph->IsFltAttrE(Attr)) return -1;
 
+  TFltV Weights = Graph->GetFltAttrVecE(Attr);
+
   int mxid = Graph->GetMxNId();
   TFltV OutWeights(mxid);
-  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
+  Graph->GetWeightOutEdgesV(OutWeights, Weights);
+  /*for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
     OutWeights[NI.GetId()] = Graph->GetWeightOutEdges(NI, Attr);
-  }
+  }*/
 
-  TFltV Weights = Graph->GetFltAttrVecE(Attr);
 
   /*TIntFltH Weights;
   for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {

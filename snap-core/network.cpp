@@ -1017,6 +1017,14 @@ TFlt TNEANet::GetWeightOutEdges(const TNodeI& NI, const TStr& attr) {
   return total;
 }
 
+void TNEANet::GetWeightOutEdgesV(TFltV& OutWeights, const TFltV& AttrVal) {
+  for (TEdgeI it = BegEI(); it < EndEI(); it++) {
+    int EId = it.GetId();
+    int SrcId = it.GetSrcNId();
+    OutWeights[SrcId] +=AttrVal[GetFltKeyIdE(EId)];
+  }
+}
+
 bool TNEANet::IsFltAttrE(const TStr& attr) {
   return (KeyToIndexTypeE.IsKey(attr) && 
     KeyToIndexTypeE.GetDat(attr).Val1 == FltType);
