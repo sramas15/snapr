@@ -5,23 +5,23 @@
 include ../Makefile.config
 
 ## Main application file
-DEMOS = \
-	demo-pagerank \
-	demo-tonetwork \
-	demo-weightedpr \
+BENCHMARKS = \
+	benchmark-pagerank \
+	benchmark-tonetwork \
+	benchmark-weightedpr \
 	\
 
-all: $(DEMOS)
+all: $(BENCHMARKS)
 
 # COMPILE
-demo-%: demo-%.cpp $(CSNAP)/Snap.o
+benchmark-%: benchmark-%.cpp $(CSNAP)/Snap.o
 	$(CC) $(CXXFLAGS) -o $@ $@.cpp $(CSNAP)/Snap.o -I$(CSNAP) -I$(CGLIB) $(LDFLAGS) $(LIBS)
 
 $(CSNAP)/Snap.o:
 	$(MAKE) -C $(CSNAP)
 
 clean:
-	rm -f *.o $(DEMOS) *.exe
+	rm -f *.o $(BENCHMARKS) *.exe
 	rm -rf Debug Release
 	rm -rf *.Err demo*.dat
 
