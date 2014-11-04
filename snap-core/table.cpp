@@ -2726,35 +2726,6 @@ inline void TTable::AddEdgeAttributes(PNEANet& Graph, int RowId) {
   }
 }
 
-inline void TTable::AddNodeAttributes(TInt NId, TStrV NodeAttrV, TInt RowId, THash<TInt, TStrIntVH>& NodeIntAttrs,
-  THash<TInt, TStrFltVH>& NodeFltAttrs, THash<TInt, TStrStrVH>& NodeStrAttrs) {
-  for (TInt i = 0; i < NodeAttrV.Len(); i++) {
-    TStr ColAttr = NodeAttrV[i];
-    TAttrType CT = GetColType(ColAttr);
-    int ColId = GetColIdx(ColAttr);
-    // check if this is a common src-dst attribute
-    for (TInt i = 0; i < CommonNodeAttrs.Len(); i++) {
-      if (CommonNodeAttrs[i].Val1 == ColAttr || CommonNodeAttrs[i].Val2 == ColAttr) {
-        ColAttr = CommonNodeAttrs[i].Val3;
-        break;
-      }
-    }
-    if (CT == atInt) {
-      if (!NodeIntAttrs.IsKey(NId)) { NodeIntAttrs.AddKey(NId); }
-      if (!NodeIntAttrs.GetDat(NId).IsKey(ColAttr)) { NodeIntAttrs.GetDat(NId).AddKey(ColAttr); }
-      NodeIntAttrs.GetDat(NId).GetDat(ColAttr).Add(IntCols[ColId][RowId]);
-    } else if (CT == atFlt) {
-      if (!NodeFltAttrs.IsKey(NId)) { NodeFltAttrs.AddKey(NId); }
-      if (!NodeFltAttrs.GetDat(NId).IsKey(ColAttr)) { NodeFltAttrs.GetDat(NId).AddKey(ColAttr); }
-      NodeFltAttrs.GetDat(NId).GetDat(ColAttr).Add(FltCols[ColId][RowId]);
-    } else {
-      if (!NodeStrAttrs.IsKey(NId)) { NodeStrAttrs.AddKey(NId); }
-      if (!NodeStrAttrs.GetDat(NId).IsKey(ColAttr)) { NodeStrAttrs.GetDat(NId).AddKey(ColAttr); }
-      NodeStrAttrs.GetDat(NId).GetDat(ColAttr).Add(GetStrVal(ColId, RowId));
-    }
-  }
-}
-
 // Makes one pass over all the rows in the vector RowIds, and builds
 // a PNEANet, with each row as an edge between SrcCol and DstCol.
 PNEANet TTable::BuildGraph(const TIntV& RowIds, TAttrAggr AggrPolicy) {
