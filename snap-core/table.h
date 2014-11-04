@@ -261,6 +261,10 @@ public:
     for (TInt i = 0; i < Cols.Len(); i++) { NCols.Add(NormalizeColName(Cols[i])); }
     return NCols;
   }
+  /// Takes as parameters, and updates, maps NodeXAttrs: Node Id --> (attribute name --> Vector of attribute values).
+  void AddNodeAttributes(TInt NId, TStrV NodeAttrV, TInt RowId, 
+   THash<TInt, TStrIntVH>& NodeIntAttrs, THash<TInt, TStrFltVH>& NodeFltAttrs, 
+   THash<TInt, TStrStrVH>& NodeStrAttrs);
 protected:
   TTableContext& Context;  ///< Execution Context. ##TTable::Context
   Schema Sch; ///< Table Schema.
@@ -397,10 +401,6 @@ protected:
   template<class T> TInt CheckAndAddFltNode(T Graph, THash<TFlt, TInt>& NodeVals, TFlt FNodeVal);
   /// Adds attributes of edge corresponding to \c RowId to the \c Graph.
   void AddEdgeAttributes(PNEANet& Graph, int RowId);
-  /// Takes as parameters, and updates, maps NodeXAttrs: Node Id --> (attribute name --> Vector of attribute values).
-  void AddNodeAttributes(TInt NId, TStrV NodeAttrV, TInt RowId, 
-   THash<TInt, TStrIntVH>& NodeIntAttrs, THash<TInt, TStrFltVH>& NodeFltAttrs, 
-   THash<TInt, TStrStrVH>& NodeStrAttrs);
   /// Makes a single pass over the rows in the given row id set, and creates nodes, edges, assigns node and edge attributes.
   PNEANet BuildGraph(const TIntV& RowIds, TAttrAggr AggrPolicy);
   /// Initializes the RowIdBuckets vector which will be used for the graph sequence creation.
