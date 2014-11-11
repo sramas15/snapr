@@ -9,6 +9,7 @@ BENCHMARKS = \
 	benchmark-pagerank \
 	benchmark-tonetwork \
 	benchmark-weightedpr \
+	benchmark-weightedpr-parallel \
 	\
 
 all: $(BENCHMARKS)

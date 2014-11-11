@@ -1,4 +1,4 @@
-#include "Snap.h"
+include "Snap.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 3) { return -1; }
@@ -29,26 +29,25 @@ int main(int argc, char* argv[]) {
   end = omp_get_wtime();
   printf("Conversion time %f\n", (end-start));
 
-  // Run num_iterations samples of PageRank
+  const TStr name = TStr("Weight");
+  // Run num_iterations samples of WeightedPageRankMP1
   TIntFltH PRankH;
   start = omp_get_wtime();
   for (int i = 0; i < num_iterations; i++) {
-    TSnap::GetPageRank(G, PRankH, 0.85, 1e-4, 10);
+    TSnap::GetWeightedPageRankMP1(G, PRankH, name, 0.85, 1e-4, 10);
   }
   end = omp_get_wtime();
-  printf("%d samples of PageRank took %f seconds\n", num_iterations, (end-start)
+  printf("%d samples of WeightedPageRankMP1 took %f seconds\n", num_iterations, 
   printf("Time per sample %f\n", ((end-start)/num_iterations));
 
-  // Run num_iterations samples of WeightedPageRank
-  const TStr name = TStr("Weight");
+  // Run num_iterations samples of WeightedPageRankMP2
   TIntFltH WPRankH;
   start = omp_get_wtime();
   for (int i = 0; i < num_iterations; i++) {
-    TSnap::GetWeightedPageRank(G, WPRankH, name, 0.85, 1e-4, 10);
+    TSnap::GetWeightedPageRankMP2(G, WPRankH, name, 0.85, 1e-4, 10);
   }
   end = omp_get_wtime();
-  printf("%d samples of WeightedPageRank took %f secs\n", num_iterations, (end-s
+  printf("%d samples of WeightedPageRankMP2 took %f secs\n", num_iterations, (en
   printf("Time per sample %f\n", ((end-start)/num_iterations));
   return 0;
 }
-
