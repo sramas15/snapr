@@ -296,6 +296,87 @@ int GetWeightedPageRankMP1(const PNEANet Graph, TIntFltH& PRankH, const TStr& At
   return 0;
 }
 
+int GetWeightedPageRankMP2(const PNEANet Graph, TIntFltH& PRankH, const TStr& Attr, const double& C, const double& Eps, const int& MaxIter) {
+  if (!Graph->IsFltAttrE(Attr)) return -1;
+  const int NNodes = Graph->GetNodes();
+  TVec<TNEANet::TNodeI> NV;
+
+  //const double OneOver = 1.0/double(NNodes);
+  PRankH.Gen(NNodes);
+  int MxId;
+
+  for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
+    NV.Add(NI);
+    PRankH.AddDat(NI.GetId(), 1.0/NNodes);
+    int Id = NI.GetId();
+    if (Id > MxId) {
+      MxId = Id;
+    }
+  }
+
+  TFltV PRankV(MxId+1);
+  TFltV OutWeights(MxId+1);
+
+  TFltV Weights = Graph->GetFltAttrVecE(Attr);
+
+  #pragma omp parallel for schedule(dynamic,10000)
+  for (int j = 0; j < NNodes; j++) {
+    TNEANet::TNodeI NI = NV[j];
+    int Id = NI.GetId();
+    OutWeights[Id] = Graph->GetWeightOutEdges(NI, Attr);
+    PRankV[Id] = 1/NNodes;
+  }
+
+  TFltV TmpV(NNodes);
+  for (int iter = 0; iter < MaxIter; iter++) {
+
+    #pragma omp parallel for schedule(dynamic,10000)
+    for (int j = 0; j < NNodes; j++) {
+      TNEANet::TNodeI NI = NV[j];
+      TFlt Tmp = 0;
+      for (int e = 0; e < NI.GetInDeg(); e++) {
+        const int InNId = NI.GetInNId(e);
+
+        const TFlt OutWeight = OutWeights[InNId];
+
+        int EId = Graph->GetEId(InNId, NI.GetId());
+        const TFlt Weight = Weights[Graph->GetFltKeyIdE(EId)];
+
+        if (OutWeight > 0) {
+          Tmp += PRankH.GetDat(InNId) * Weight / OutWeight; 
+        }
+      }
+      TmpV[j] =  C*Tmp; // Berkhin (the correct way of doing it)
+      //TmpV[j] =  C*TmpV[j] + (1.0-C)*OneOver; // iGraph
+    }
+
+    double sum = 0;
+    #pragma omp parallel for reduction(+:sum) schedule(dynamic,10000)
+    for (int i = 0; i < TmpV.Len(); i++) { sum += TmpV[i]; }
+    const double Leaked = (1.0-sum) / double(NNodes);
+
+    double diff = 0;
+    #pragma omp parallel for reduction(+:diff) schedule(dynamic,10000)
+    for (int i = 0; i < NNodes; i++) {
+      typename PGraph::TObj::TNodeI NI = NV[i];
+      double NewVal = TmpV[i] + Leaked; // Berkhin
+      //NewVal = TmpV[i] / sum;  // iGraph
+      int Id = NI.GetId();
+      diff += fabs(NewVal-PRankV[Id]);
+      PRankV[Id] = NewVal;
+    }
+    if (diff < Eps) { break; }
+  }
+
+  #pragma omp parallel for schedule(dynamic,10000)
+  for (int i = 0; i < NNodes; i++) {
+    TNEANet::TNodeI NI = NV[i];
+    PRankH[i] = PRankV[NI.GetId()];
+  }
+
+  return 0;
+}
+
 #endif
 
 }; // namespace TSnap
