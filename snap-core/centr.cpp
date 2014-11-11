@@ -358,7 +358,7 @@ int GetWeightedPageRankMP2(const PNEANet Graph, TIntFltH& PRankH, const TStr& At
     double diff = 0;
     #pragma omp parallel for reduction(+:diff) schedule(dynamic,10000)
     for (int i = 0; i < NNodes; i++) {
-      typename PGraph::TObj::TNodeI NI = NV[i];
+      TNEANet::TNodeI NI = NV[i];
       double NewVal = TmpV[i] + Leaked; // Berkhin
       //NewVal = TmpV[i] / sum;  // iGraph
       int Id = NI.GetId();
