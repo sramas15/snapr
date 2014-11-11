@@ -255,7 +255,7 @@ int GetWeightedPageRankMP1(const PNEANet Graph, TIntFltH& PRankH, const TStr& At
   }*/
 
   const int NNodes = Graph->GetNodes();
-  TVec<typename PGraph::TObj::TNodeI> NV;
+  TVec<TNEANet::TNodeI> NV;
   //const double OneOver = 1.0/double(NNodes);
   PRankH.Gen(NNodes);
   for (TNEANet::TNodeI NI = Graph->BegNI(); NI < Graph->EndNI(); NI++) {
@@ -265,10 +265,9 @@ int GetWeightedPageRankMP1(const PNEANet Graph, TIntFltH& PRankH, const TStr& At
   }
   TFltV TmpV(NNodes);
   for (int iter = 0; iter < MaxIter; iter++) {
-    int j = 0;
     #pragma omp parallel for schedule(dynamic,10000)
     for (int j = 0; j < NNodes; j++) {
-      typename PGraph::TObj::TNodeI NI = NV[j];
+      TNEANet::TNodeI NI = NV[j];
       TmpV[j] = 0;
       for (int e = 0; e < NI.GetInDeg(); e++) {
         const int InNId = NI.GetInNId(e);
