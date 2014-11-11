@@ -918,6 +918,7 @@ void TTable::GroupingSanityCheck(const TStr& GroupBy, const TAttrType& AttrType)
 #ifdef _OPENMP
 void TTable::GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping, TBool UsePhysicalIds) const {
   TInt IdColIdx = GetColIdx(IdColName);
+  TInt GroupByColIdx = GetColIdx(GroupBy);
   if(!UsePhysicalIds && IdColIdx < 0){
   	TExcept::Throw("Grouping: Either use physical row ids, or have an id column");
   }
@@ -933,14 +934,15 @@ void TTable::GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping
   //double endGen = omp_get_wtime();
   //printf("Gen time = %f\n", endGen-endPart);
   #ifdef _OPENMP
-  #pragma omp parallel for schedule(dynamic, CHUNKS_PER_THREAD) num_threads(1)
+  #pragma omp parallel for schedule(dynamic, CHUNKS_PER_THREAD) //num_threads(1)
   #endif
   for (int i = 0; i < Partitions.Len(); i++){
     TRowIterator RowI(Partitions[i].GetVal1(), this);
     TRowIterator EndI(Partitions[i].GetVal2(), this);
     while (RowI < EndI) {
       TInt idx = UsePhysicalIds ? RowI.GetRowIdx() : RowI.GetIntAttr(IdColIdx);
-      UpdateGrouping<TInt>(Grouping, RowI.GetIntAttr(GroupBy), idx);
+      // printf("updating grouping with key = %d, row_id = %d\n", RowI.GetIntAttr(GroupBy).Val, idx.Val);
+      UpdateGrouping<TInt>(Grouping, RowI.GetIntAttr(GroupByColIdx), idx);
       RowI++;
     }
   }
@@ -1097,17 +1099,20 @@ void TTable::GroupAux(const TStrV& GroupBy, THash<TGroupKey, TPair<TInt, TIntV> 
       }
     }
   }
+  // printf("KeepUnique: %d\n", KeepUnique.Val);
   // update group mapping
   if (!KeepUnique) {
-    TPair<TStrV, TBool> GroupStmt(GroupBy, Ordered);
-    GroupStmtNames.AddDat(GroupColName, GroupStmt);
-    GroupIDMapping.AddDat(GroupStmt);
-    GroupMapping.AddDat(GroupStmt);
+    GroupStmt Stmt(NormalizeColNameV(GroupBy), Ordered, UsePhysicalIds);
+    GroupStmtNames.AddDat(GroupColName, Stmt);
+    GroupIDMapping.AddKey(Stmt);
+    GroupMapping.AddKey(Stmt);
+    //printf("Adding statement: ");
+    //Stmt.Print();
     for (THash<TGroupKey, TPair<TInt, TIntV> >::TIter it = Grouping.BegI(); it < Grouping.EndI(); it++) {
       TGroupKey key = it.GetKey();
       TPair<TInt, TIntV> group = it.GetDat();
-      GroupIDMapping.GetDat(GroupStmt).AddDat(group.Val1, key);
-      GroupMapping.GetDat(GroupStmt).AddDat(key, group.Val2);
+      GroupIDMapping.GetDat(Stmt).AddDat(group.Val1, TGroupKey(key));
+      GroupMapping.GetDat(Stmt).AddDat(TGroupKey(key), TIntV(group.Val2));
     }
   }
 
@@ -1249,49 +1254,105 @@ void TTable::GroupAuxMP(const TStrV& GroupBy, THashGenericMP<TGroupKey, TPair<TI
 #endif // _OPENMP
 */
 
-// grouping begins here
 void TTable::Group(const TStrV& GroupBy, const TStr& GroupColName, TBool Ordered, TBool UsePhysicalIds) {
   TStrV NGroupBy = NormalizeColNameV(GroupBy);
   TStr NGroupColName = NormalizeColName(GroupColName);
   TIntV UniqueVec;
   THash<TGroupKey, TPair<TInt, TIntV> > Grouping;
-  // by default, we assume we don't want unique rows
   GroupAux(NGroupBy, Grouping, Ordered, NGroupColName, false, UniqueVec, UsePhysicalIds);
+}
+
+void TTable::InvalidatePhysicalGroupings(){
+	//TODO
+}
+
+void TTable::InvalidateAffectedGroupings(const TStr& Attr){
+	//TODO
 }
 
 void TTable::Aggregate(const TStrV& GroupByAttrs, TAttrAggr AggOp,
  const TStr& ValAttr, const TStr& ResAttr, TBool Ordered) {
+ 
+   for (TInt c = 0; c < GroupByAttrs.Len(); c++) {
+    if (!IsColName(GroupByAttrs[c])) { 
+      TExcept::Throw("no such column " + GroupByAttrs[c]); 
+    }
+   }
+    
   // double startFn = omp_get_wtime();
   TStrV NGroupByAttrs = NormalizeColNameV(GroupByAttrs);
-  
   TBool UsePhysicalIds = (GetColIdx(IdColName) < 0);
+  
+  THash<TInt,TIntV> GroupByIntMapping;
+  THash<TFlt,TIntV> GroupByFltMapping;
+  THash<TInt,TIntV> GroupByStrMapping;
+  THash<TGroupKey,TIntV> Mapping;
+  #ifdef _OPENMP
+  THashMP<TInt,TIntV> GroupByIntMapping_MP(NumValidRows);
+  TIntV GroupByIntMPKeys(NumValidRows);
+  #endif
+  TInt NumOfGroups = 0;
+  TInt GroupingCase = 0;
 
   // check if grouping already exists
-  TPair<TStrV, TBool> GroupStmtName(NGroupByAttrs, Ordered);
-  if (!GroupMapping.IsKey(GroupStmtName)) {
-    // group mapping does not exist, perform grouping first
-    Group(NGroupByAttrs, "", Ordered, UsePhysicalIds);
+  GroupStmt Stmt(NGroupByAttrs, Ordered, UsePhysicalIds);
+  if (GroupMapping.IsKey(Stmt)) {
+    Mapping = GroupMapping.GetDat(Stmt);
   } else{
-  	//printf("found it!\n");
+  	if(NGroupByAttrs.Len() == 1){
+  		switch(GetColType(NGroupByAttrs[0])){
+  			case atInt:
+  				#ifdef _OPENMP
+  				if(GetMP()){
+  					GroupByIntColMP(NGroupByAttrs[0], GroupByIntMapping_MP, UsePhysicalIds);
+  					int x = 0;
+					for(THashMP<TInt,TIntV>::TIter it = GroupByIntMapping_MP.BegI(); it < GroupByIntMapping_MP.EndI(); it++){
+						GroupByIntMPKeys[x] = it.GetKey();
+						x++;
+						/*
+						printf("%d --> ", it.GetKey().Val);
+						TIntV& V = it.GetDat();
+						for(int i = 0; i < V.Len(); i++){
+							printf(" %d", V[i].Val); 
+						}
+						printf("\n");
+						*/
+					}
+  					NumOfGroups = x;
+  					GroupingCase = 4;
+  					//printf("Number of groups: %d\n", NumOfGroups.Val);
+  					break;
+  				}
+  				#endif //_OPENMP
+  				GroupByIntCol(NGroupByAttrs[0], GroupByIntMapping, TIntV(), true, UsePhysicalIds);
+  				NumOfGroups = GroupByIntMapping.Len();
+  				GroupingCase = 1;
+  				break;
+  			case atFlt:
+  				GroupByFltCol(NGroupByAttrs[0], GroupByFltMapping, TIntV(), true, UsePhysicalIds);
+  				NumOfGroups = GroupByFltMapping.Len();
+  				GroupingCase = 2;
+  				break;
+  			case atStr:
+  				GroupByStrCol(NGroupByAttrs[0], GroupByStrMapping, TIntV(), true, UsePhysicalIds);
+  				NumOfGroups = GroupByStrMapping.Len();
+  				GroupingCase = 3;
+  				break;
+  		}
+  	}
+  	else{
+  		TIntV UniqueVector;
+  		THash<TGroupKey, TPair<TInt, TIntV> > Mapping_aux;
+  		GroupAux(NGroupByAttrs, Mapping_aux, Ordered, "", false, UniqueVector, UsePhysicalIds);
+  		for(THash<TGroupKey, TPair<TInt, TIntV> >::TIter it = Mapping_aux.BegI(); it < Mapping_aux.EndI(); it++){
+  			Mapping.AddDat(it.GetKey(), it.GetDat().Val2);
+  		}
+  		NumOfGroups = Mapping.Len();
+  	}
   }
+    
   // double endGroup = omp_get_wtime();
   // printf("Group time = %f\n", endGroup-startFn);
-
-  // group mapping exists, retrieve it and aggregate
-  THash<TGroupKey, TIntV> Mapping = GroupMapping.GetDat(GroupStmtName);
-  /*
-  for(THash<TGroupKey, TIntV>::TIter it = Mapping.BegI(); it < Mapping.EndI(); it++){
-  	TGroupKey gk = it.GetKey();
-  	TIntV ik = gk.Val1;
-  	TFltV fk = gk.Val2;
-  	for(int i = 0; i < ik.Len(); i++){ printf("%d ",ik[i].Val);} 
-  	for(int i = 0; i < fk.Len(); i++){ printf("%f ",fk[i].Val);} 
-  	printf("-->");
-  	TIntV v = it.GetDat();
-  	for(int i = 0; i < v.Len(); i++){ printf("%d ",v[i].Val);} 
-  	printf("\n");
-  }
-  */
 
   TAttrType T = GetColType(ValAttr);
 
@@ -1313,12 +1374,31 @@ void TTable::Aggregate(const TStrV& GroupByAttrs, TAttrAggr AggOp,
 
   #ifdef _OPENMP
   #pragma omp parallel for schedule(dynamic)
-  #endif
-  for (int i = 0; i < Mapping.Len(); i++) {
-    THash<TGroupKey, TIntV>::TIter it = Mapping.GetI(Mapping.GetKey(i));
-    TIntV& GroupRows = it.GetDat();
-    
+  #endif 
+  for (int g = 0; g < NumOfGroups; g++) {
+  	TIntV* GroupRows;
+  	switch(GroupingCase){
+  		case 0:
+  			GroupRows = & Mapping.GetDat(Mapping.GetKey(g));
+  			break;
+  		case 1:
+  			GroupRows = & GroupByIntMapping.GetDat(GroupByIntMapping.GetKey(g));
+  			break;
+  		case 2:
+  			GroupRows = & GroupByIntMapping.GetDat(GroupByIntMapping.GetKey(g));
+  			break;
+  	    case 3:
+  			GroupRows = & GroupByStrMapping.GetDat(GroupByStrMapping.GetKey(g));
+  			break;
+  		case 4:
+  			#ifdef _OPENMP
+  			GroupRows = & GroupByIntMapping_MP.GetDat(GroupByIntMPKeys[g]);
+  			#endif
+  			break;
+  	}
+
     // find valid rows of group
+    /*
     TIntV ValidRows;
     for (TInt i = 0; i < GroupRows.Len(); i++) {
       // TODO: This should not be necessary
@@ -1327,7 +1407,8 @@ void TTable::Aggregate(const TStrV& GroupByAttrs, TAttrAggr AggOp,
       // GroupRows has physical row indices
       if (RowId != Invalid) { ValidRows.Add(RowId); }
     }
-
+    */
+	TIntV& ValidRows = *GroupRows;
     TInt sz = ValidRows.Len();
     if (sz <= 0) continue;
     // Count is handled separately (other operations have aggregation policies defined in a template)
@@ -1390,6 +1471,20 @@ void TTable::AggregateCols(const TStrV& AggrAttrs, TAttrAggr AggOp, const TStr& 
   } else {
     TExcept::Throw("AggregateCols: Only Int and Flt aggregation supported right now");
   }
+}
+
+void TTable::PrintGrouping(const THash<TGroupKey, TIntV>& Mapping) const{
+	for(THash<TGroupKey, TIntV>::TIter it = Mapping.BegI(); it < Mapping.EndI(); it++){
+  		TGroupKey gk = it.GetKey();
+  		TIntV ik = gk.Val1;
+  		TFltV fk = gk.Val2;
+  		for(int i = 0; i < ik.Len(); i++){ printf("%d ",ik[i].Val);} 
+  		for(int i = 0; i < fk.Len(); i++){ printf("%f ",fk[i].Val);} 
+  		printf("-->");
+  		TIntV v = it.GetDat();
+  		for(int i = 0; i < v.Len(); i++){ printf("%d ",v[i].Val);} 
+  		printf("\n");
+  	}
 }
 
 void TTable::Count(const TStr& CountColName, const TStr& Col) {
@@ -1866,15 +1961,20 @@ PTable TTable::Join(const TStr& Col1, const TTable& Table, const TStr& Col2) {
   // double startFn = omp_get_wtime();
   if (!IsColName(Col1)) {
     TExcept::Throw("no such column " + Col1);
+    printf("no such column %s\n", Col1.CStr());
   }
   if (!Table.IsColName(Col2)) {
     TExcept::Throw("no such column " + Col2);
+    printf("no such column %s\n", Col2.CStr());
   }
   if (GetColType(Col1) != Table.GetColType(Col2)) {
     TExcept::Throw("Trying to Join on columns of different type");
+    printf("Trying to Join on columns of different type\n");
   }
+  //printf("passed initial checks\n");
   // initialize result table
   PTable JointTable = InitializeJointTable(Table);
+  //printf("initialized joint table\n");
   // hash smaller table (group by column)
   TAttrType ColType = GetColType(Col1);
   TBool ThisIsSmaller = (NumValidRows <= Table.NumValidRows);
@@ -1892,7 +1992,7 @@ PTable TTable::Join(const TStr& Col1, const TTable& Table, const TStr& Col2) {
     switch(ColType){
       case atInt:{
         THashMP<TInt, TIntV> T(TS.GetNumValidRows());
-        TS.GroupByIntColMP(ColS, T);
+        TS.GroupByIntColMP(ColS, T, true);
         // double endGroup = omp_get_wtime();
         // printf("Group time = %f\n", endGroup-endInit);
         
@@ -3431,12 +3531,89 @@ void TTable::UpdateTableForNewRow() {
   NumValidRows++;
 }
 
+#ifdef _OPENMP
+void TTable::SetFltColToConstMP(TInt UpdateColIdx, TFlt DefaultFltVal){
+    if(!GetMP()){ TExcept::Throw("Not Using MP!");}
+	TIntPrV Partitions;
+	GetPartitionRanges(Partitions, omp_get_max_threads()*CHUNKS_PER_THREAD);
+	TInt PartitionSize = Partitions[0].GetVal2()-Partitions[0].GetVal1()+1;
+	#pragma omp parallel for schedule(dynamic, CHUNKS_PER_THREAD)
+	for (int i = 0; i < Partitions.Len(); i++){
+		TRowIterator RowI(Partitions[i].GetVal1(), this);
+		TRowIterator EndI(Partitions[i].GetVal2(), this);
+		while(RowI < EndI){
+			FltCols[UpdateColIdx][RowI.GetRowIdx()] = DefaultFltVal;
+			RowI++;
+		}
+	}
+}
+
+void TTable::UpdateFltFromTableMP(const TStr& KeyAttr, const TStr& UpdateAttr, const TTable& Table, 
+  	const TStr& FKeyAttr, const TStr& ReadAttr, TFlt DefaultFltVal){
+	if(!GetMP()){ TExcept::Throw("Not Using MP!");}
+  	TAttrType KeyType = GetColType(KeyAttr);
+  	TAttrType FKeyType = Table.GetColType(FKeyAttr);
+  	if(KeyType != FKeyType){TExcept::Throw("Key Type Mismatch");}
+  	if(GetColType(UpdateAttr) != atFlt || Table.GetColType(ReadAttr) != atFlt){
+  		TExcept::Throw("Expecting Float values");
+  	}
+  	TStr NKeyAttr = NormalizeColName(KeyAttr);
+  	TStr NUpdateAttr = NormalizeColName(UpdateAttr);
+  	TStr NFKeyAttr = Table.NormalizeColName(FKeyAttr);
+  	TStr NReadAttr = Table.NormalizeColName(ReadAttr);
+  	TInt UpdateColIdx = GetColIdx(UpdateAttr);
+
+  	// TODO: this should be a generic vector operation
+  	SetFltColToConstMP(UpdateColIdx, DefaultFltVal);
+  		
+	TIntPrV Partitions;
+	Table.GetPartitionRanges(Partitions, omp_get_max_threads()*CHUNKS_PER_THREAD);
+	TInt PartitionSize = Partitions[0].GetVal2()-Partitions[0].GetVal1()+1;
+	TIntV Locks(NumRows);
+	Locks.PutAll(0);	// need to parallelize this...
+  	switch(KeyType){
+  		// TODO: add support for other cases of KeyType
+  		case atInt:{
+  			THashMP<TInt,TIntV> Grouping;
+  			// must use physical row ids
+  			GroupByIntColMP(NKeyAttr, Grouping, true);
+			#pragma omp parallel for schedule(dynamic, CHUNKS_PER_THREAD) //num_threads(1)
+			for (int i = 0; i < Partitions.Len(); i++){
+				TRowIterator RowI(Partitions[i].GetVal1(), &Table);
+				TRowIterator EndI(Partitions[i].GetVal2(), &Table);
+				while(RowI < EndI){
+  					TInt K = RowI.GetIntAttr(NFKeyAttr);
+  					if(Grouping.IsKey(K)){
+  						TIntV UpdateRows = Grouping.GetDat(K);
+  						for(int j = 0; j < UpdateRows.Len(); j++){
+  							if(!__sync_bool_compare_and_swap(&Locks[UpdateRows[j]].Val, 0, 1)){ continue;}
+  							//printf("key = %d, row = %d, old_score = %f\n", K.Val, j, UpdateRows[j].Val, FltCols[UpdateColIdx][UpdateRows[j]].Val);
+  							FltCols[UpdateColIdx][UpdateRows[j]] = RowI.GetFltAttr(NReadAttr);
+  							//printf("key = %d, new_score = %f\n", K.Val, j, FltCols[UpdateColIdx][UpdateRows[j]].Val);
+  					 	} // end of for loop
+  					} // end of if statement
+  					RowI++;
+  				} // end of while loop
+  			}	// end of for loop
+  			break;
+  		} // end of case atInt
+  	} // end of outer switch statement
+}
+#endif	//_OPENMP
+
 void TTable::UpdateFltFromTable(const TStr& KeyAttr, const TStr& UpdateAttr, const TTable& Table, 
   	const TStr& FKeyAttr, const TStr& ReadAttr, TFlt DefaultFltVal){
   	if(!IsColName(KeyAttr)){ TExcept::Throw("Bad KeyAttr parameter");}
   	if(!IsColName(UpdateAttr)){ TExcept::Throw("Bad UpdateAttr parameter");}
   	if(!Table.IsColName(FKeyAttr)){ TExcept::Throw("Bad FKeyAttr parameter");}
   	if(!Table.IsColName(ReadAttr)){ TExcept::Throw("Bad ReadAttr parameter");}
+  	
+  	#ifdef _OPENMP
+  	if(GetMP()){
+  		UpdateFltFromTableMP(KeyAttr, UpdateAttr,Table, FKeyAttr, ReadAttr, DefaultFltVal);
+  		return;
+  	}
+  	#endif	//_OPENMP
   	
   	TAttrType KeyType = GetColType(KeyAttr);
   	TAttrType FKeyType = Table.GetColType(FKeyAttr);
@@ -3450,7 +3627,7 @@ void TTable::UpdateFltFromTable(const TStr& KeyAttr, const TStr& UpdateAttr, con
   	TStr NReadAttr = Table.NormalizeColName(ReadAttr);
   	TInt UpdateColIdx = GetColIdx(UpdateAttr);
   	
-  	for(TRowIterator iter = BegRI(); iter < EndRI(); iter++){
+    for(TRowIterator iter = BegRI(); iter < EndRI(); iter++){
   		FltCols[UpdateColIdx][iter.GetRowIdx()] = DefaultFltVal;
   	}
   	
@@ -3458,7 +3635,7 @@ void TTable::UpdateFltFromTable(const TStr& KeyAttr, const TStr& UpdateAttr, con
   		// TODO: add support for other cases of KeyType
   		case atInt:{
   			TIntIntVH Grouping;
-  			GroupByIntCol(NKeyAttr, Grouping, TIntV(), true);
+  			GroupByIntCol(NKeyAttr, Grouping, TIntV(), true, true);
   			for(TRowIterator RI = Table.BegRI(); RI < Table.EndRI(); RI++){
   				TInt K = RI.GetIntAttr(NFKeyAttr);
   				if(Grouping.IsKey(K)){
@@ -3920,6 +4097,7 @@ void TTable::ColGenericOpMP(TInt ArgColIdx1, TInt ArgColIdx2, TAttrType ArgType1
       			if (op == aoMin) { FltCols[ResColIdx][RowI.GetRowIdx()] = (V1 < V2) ? V1 : V2;}
       			if (op == aoMax) { FltCols[ResColIdx][RowI.GetRowIdx()] = (V1 > V2) ? V1 : V2;}
 			}
+			RowI++;
 		}
 	}
 }
@@ -4035,97 +4213,89 @@ void TTable::ColGenericOp(const TStr& Attr1, TTable& Table, const TStr& Attr2, c
 
   TPair<TAttrType, TInt> Info1 = GetColTypeMap(Attr1);
   TPair<TAttrType, TInt> Info2 = Table.GetColTypeMap(Attr2);
-
+  TAttrType Arg1Type = Info1.Val1;
+  TAttrType Arg2Type = Info2.Val1;
   if (Info1.Val1 == atStr || Info2.Val1 == atStr) {
     TExcept::Throw("Only numeric columns supported in arithmetic operations.");
   }
-
+  if(Arg1Type == atInt && Arg2Type == atFlt && ResAttr == ""){
+  	TExcept::Throw("Trying to write float values to an existing int-typed column");
+  }
   // source column indices
   TInt ColIdx1 = Info1.Val2;
   TInt ColIdx2 = Info2.Val2;
 
   // destination column index
-  TInt ColIdx3 = ColIdx1;
-
-  if (!AddToFirstTable) {
-    ColIdx3 = ColIdx2;
-  }
+  TInt ColIdx3 = AddToFirstTable ? ColIdx1 : ColIdx2;
 
   // Create empty result column in appropriate table with type that of first attribute
   if (ResAttr != "") {
     if (AddToFirstTable) {
-      if (Info1.Val1 == atInt) {
+      if (Arg1Type == atInt && Arg2Type == atInt) {
           AddIntCol(ResAttr);
-      }
-      else {
+      } else {
           AddFltCol(ResAttr);
       }
       ColIdx3 = GetColIdx(ResAttr);
     }
     else {
-      if (Info1.Val1 == atInt) {
+      if (Arg1Type == atInt && Arg2Type == atInt) {
           Table.AddIntCol(ResAttr);
-      }
-      else {
+      } else {
           Table.AddFltCol(ResAttr);
       }
       ColIdx3 = Table.GetColIdx(ResAttr);
     }
   }
-
+  
+  /*
+  #ifdef _OPENMP
+  if(GetMP()){
+  	ColGenericOpMP(Table, AddToFirstTable, ColIdx1, ColIdx2, Arg1Type, Arg2Type, ColIdx3, op);
+  	return;
+  }
+  #endif	//_OPENMP
+  */
+	
   TRowIterator RI1, RI2;
-
   RI1 = BegRI();
   RI2 = Table.BegRI();
-  
+  TAttrType ResType = atFlt;
+  if(Arg1Type == atInt && Arg2Type == atInt){ ResType = atInt;}
   while (RI1 < EndRI() && RI2 < Table.EndRI()) {
-    if (Info1.Val1 == atInt) {
-      TInt Val, CurVal;
-      CurVal = RI1.GetIntAttr(ColIdx1);
-      if (Info2.Val1 == atInt) {
-        Val = RI2.GetIntAttr(ColIdx2);
-      }
-      else {
-        Val = RI2.GetFltAttr(ColIdx2);
-      }
-      if (AddToFirstTable) {
-        if (op == aoAdd) { IntCols[ColIdx3][RI1.GetRowIdx()] = CurVal + Val; }
-        if (op == aoSub) { IntCols[ColIdx3][RI1.GetRowIdx()] = CurVal - Val; }
-        if (op == aoMul) { IntCols[ColIdx3][RI1.GetRowIdx()] = CurVal * Val; }
-        if (op == aoDiv) { IntCols[ColIdx3][RI1.GetRowIdx()] = CurVal / Val; }
-        if (op == aoMod) { IntCols[ColIdx3][RI1.GetRowIdx()] = CurVal % Val; }
-      }
-      else {
-        if (op == aoAdd) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = CurVal + Val; }
-        if (op == aoSub) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = CurVal - Val; }
-        if (op == aoMul) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = CurVal * Val; }
-        if (op == aoDiv) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = CurVal / Val; }
-        if (op == aoMod) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = CurVal % Val; }
-      }
-    }
-    else {
-      TFlt Val, CurVal;
-      CurVal = RI1.GetFltAttr(ColIdx1);
-      if (Info2.Val1 == atInt) {
-        Val = RI2.GetIntAttr(ColIdx2);
-      }
-      else {
-        Val = RI2.GetFltAttr(ColIdx2);
-      }
-      if (AddToFirstTable) {
-        if (op == aoAdd) { FltCols[ColIdx3][RI1.GetRowIdx()] = CurVal + Val; }
-        if (op == aoSub) { FltCols[ColIdx3][RI1.GetRowIdx()] = CurVal - Val; }
-        if (op == aoMul) { FltCols[ColIdx3][RI1.GetRowIdx()] = CurVal * Val; }
-        if (op == aoDiv) { FltCols[ColIdx3][RI1.GetRowIdx()] = CurVal / Val; }
-        if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
-      }
-      else {
-        if (op == aoAdd) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = CurVal + Val; }
-        if (op == aoSub) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = CurVal - Val; }
-        if (op == aoMul) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = CurVal * Val; }
-        if (op == aoDiv) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = CurVal / Val; }
-        if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
-      }
+    if (ResType == atInt) {
+		TInt V1 = RI1.GetIntAttr(ColIdx1);
+		TInt V2 = RI2.GetIntAttr(ColIdx2);
+        if (AddToFirstTable) {
+        	if (op == aoAdd) { IntCols[ColIdx3][RI1.GetRowIdx()] = V1 + V2; }
+        	if (op == aoSub) { IntCols[ColIdx3][RI1.GetRowIdx()] = V1 - V2; }
+        	if (op == aoMul) { IntCols[ColIdx3][RI1.GetRowIdx()] = V1 * V2; }
+        	if (op == aoDiv) { IntCols[ColIdx3][RI1.GetRowIdx()] = V1 / V2; }
+       		if (op == aoMod) { IntCols[ColIdx3][RI1.GetRowIdx()] = V1 % V2; }
+      	}
+      	else {
+        	if (op == aoAdd) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = V1 + V2; }
+        	if (op == aoSub) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = V1 - V2; }
+        	if (op == aoMul) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = V1 * V2; }
+        	if (op == aoDiv) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = V1 / V2; }
+        	if (op == aoMod) { Table.IntCols[ColIdx3][RI2.GetRowIdx()] = V1 % V2; }
+      	}
+    } else {
+	  	TFlt V1 = (Arg1Type == atInt) ? (TFlt)RI1.GetIntAttr(ColIdx1) : RI2.GetFltAttr(ColIdx1);
+		TFlt V2 = (Arg2Type == atInt) ? (TFlt)RI1.GetIntAttr(ColIdx2) : RI2.GetFltAttr(ColIdx2);
+      	if (AddToFirstTable) {
+        	if (op == aoAdd) { FltCols[ColIdx3][RI1.GetRowIdx()] = V1 + V2; }
+        	if (op == aoSub) { FltCols[ColIdx3][RI1.GetRowIdx()] = V1 - V2; }
+        	if (op == aoMul) { FltCols[ColIdx3][RI1.GetRowIdx()] = V1 * V2; }
+       	 	if (op == aoDiv) { FltCols[ColIdx3][RI1.GetRowIdx()] = V1 / V2; }
+        	if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
+      	} else {
+        	if (op == aoAdd) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = V1 + V2; }
+        	if (op == aoSub) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = V1 - V2; }
+        	if (op == aoMul) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = V1 * V2; }
+        	if (op == aoDiv) { Table.FltCols[ColIdx3][RI2.GetRowIdx()] = V1 / V2; }
+        	if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
+      	}
     }
     RI1++;
     RI2++;
@@ -4167,24 +4337,21 @@ void TTable::ColGenericOp(const TStr& Attr1, const TFlt& Num, const TStr& ResAtt
   if (!IsAttr(Attr1)) { TExcept::Throw("No attribute present: " + Attr1); }
 
   TPair<TAttrType, TInt> Info1 = GetColTypeMap(Attr1);
-
-  if (Info1.Val1 == atStr) {
+  TAttrType ArgType = Info1.Val1;
+  if (ArgType == atStr) {
     TExcept::Throw("Only numeric columns supported in arithmetic operations.");
   }
-
   // source column index
   TInt ColIdx1 = Info1.Val2;
-
   // destination column index
   TInt ColIdx2 = ColIdx1;
 
   // Create empty result column with type that of first attribute
   TBool shouldCast = floatCast;
   if (ResAttr != "") {
-      if ((Info1.Val1 == atInt) & !shouldCast) {
+      if ((ArgType == atInt) & !shouldCast) {
           AddIntCol(ResAttr);
-      }
-      else {
+      } else {
           AddFltCol(ResAttr);
       }
       ColIdx2 = GetColIdx(ResAttr);
@@ -4192,9 +4359,16 @@ void TTable::ColGenericOp(const TStr& Attr1, const TFlt& Num, const TStr& ResAtt
     // Cannot change type of existing attribute
     shouldCast = false;
   }
-
+  
+  #ifdef _OPENMP
+  if(GetMP()){
+  	ColGenericOpMP(ColIdx1, ColIdx2, ArgType, Num, op, shouldCast);
+  	return;
+  }
+  #endif  //_OPENMP
+	
   for (TRowIterator RowI = BegRI(); RowI < EndRI(); RowI++) {
-    if ((Info1.Val1 == atInt) && !shouldCast) {
+    if ((ArgType == atInt) && !shouldCast) {
       TInt CurVal = RowI.GetIntAttr(ColIdx1);
       TInt Val = (TInt) Num;
       if (op == aoAdd) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal + Val; }
@@ -4204,7 +4378,7 @@ void TTable::ColGenericOp(const TStr& Attr1, const TFlt& Num, const TStr& ResAtt
       if (op == aoMod) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal % Val; }
     }
     else {
-      TFlt CurVal = Info1.Val1 == atFlt ? RowI.GetFltAttr(ColIdx1) : (TFlt) RowI.GetIntAttr(ColIdx1);
+      TFlt CurVal = (ArgType == atFlt) ? RowI.GetFltAttr(ColIdx1) : (TFlt) RowI.GetIntAttr(ColIdx1);
       if (op == aoAdd) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal + Num; }
       if (op == aoSub) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal - Num; }
       if (op == aoMul) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal * Num; }
@@ -4212,6 +4386,36 @@ void TTable::ColGenericOp(const TStr& Attr1, const TFlt& Num, const TStr& ResAtt
       if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
     }
   }
+}
+
+void TTable::ColGenericOpMP(TInt ColIdx1, TInt ColIdx2, TAttrType ArgType, TFlt Num, TArithOp op, TBool ShouldCast){
+	TIntPrV Partitions;
+	GetPartitionRanges(Partitions, omp_get_max_threads()*CHUNKS_PER_THREAD);
+	TInt PartitionSize = Partitions[0].GetVal2()-Partitions[0].GetVal1()+1;
+	#pragma omp parallel for schedule(dynamic, CHUNKS_PER_THREAD)
+	for (int i = 0; i < Partitions.Len(); i++){
+		TRowIterator RowI(Partitions[i].GetVal1(), this);
+		TRowIterator EndI(Partitions[i].GetVal2(), this);
+		while(RowI < EndI){
+			if ((ArgType == atInt) && !ShouldCast) {
+      			TInt CurVal = RowI.GetIntAttr(ColIdx1);
+      			TInt Val = (TInt) Num;
+      			if (op == aoAdd) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal + Val; }
+      			if (op == aoSub) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal - Val; }
+      			if (op == aoMul) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal * Val; }
+      			if (op == aoDiv) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal / Val; }
+      			if (op == aoMod) { IntCols[ColIdx2][RowI.GetRowIdx()] = CurVal % Val; }
+    		} else {
+     			TFlt CurVal = (ArgType == atFlt) ? RowI.GetFltAttr(ColIdx1) : (TFlt) RowI.GetIntAttr(ColIdx1);
+      			if (op == aoAdd) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal + Num; }
+      			if (op == aoSub) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal - Num; }
+      			if (op == aoMul) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal * Num; }
+      			if (op == aoDiv) { FltCols[ColIdx2][RowI.GetRowIdx()] = CurVal / Num; }
+      			if (op == aoMod) { TExcept::Throw("Cannot find modulo for float columns"); }
+    		}
+    		RowI++;
+		}
+	}
 }
 
 void TTable::ColAdd(const TStr& Attr1, const TFlt& Num, const TStr& ResultAttrName, const TBool floatCast) {

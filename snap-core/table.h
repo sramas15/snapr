@@ -105,6 +105,67 @@ typedef enum {aoAdd, aoSub, aoMul, aoDiv, aoMod, aoMin, aoMax} TArithOp;
 typedef TVec<TPair<TStr, TAttrType> > Schema; 
 
 //#//////////////////////////////////////////////
+/// A class representing a cached grouping statement identifier
+class GroupStmt{
+protected:
+	TStrV GroupByAttrs;
+	TBool Ordered;
+	TBool UsePhysicalRowIds;
+	TBool Valid;
+public:
+	GroupStmt(): GroupByAttrs(TStrV()), Ordered(true), UsePhysicalRowIds(true), Valid(true){}
+	GroupStmt(const TStrV& Attrs): GroupByAttrs(Attrs), Ordered(true), UsePhysicalRowIds(true), Valid(true){}
+	GroupStmt(const TStrV& Attrs, TBool ordered, TBool physical): GroupByAttrs(Attrs), Ordered(ordered), UsePhysicalRowIds(physical), Valid(true){}
+	GroupStmt(const GroupStmt& stmt): GroupByAttrs(stmt.GroupByAttrs), Ordered(stmt.Ordered), UsePhysicalRowIds(stmt.UsePhysicalRowIds), Valid(stmt.Valid){}
+	TBool UsePhysicalIds(){return UsePhysicalRowIds;}
+	TBool operator ==(const GroupStmt& stmt) const{
+		if(stmt.Ordered != Ordered || stmt.UsePhysicalRowIds != UsePhysicalRowIds){ return false;}
+		if(stmt.GroupByAttrs.Len() != GroupByAttrs.Len()){ return false;}
+		for(int i = 0; i < GroupByAttrs.Len(); i++){
+			if(stmt.GroupByAttrs[i] != GroupByAttrs[i]){ return false;}
+		}
+		return true;
+	}
+	TBool IsValid(){ return Valid;}
+	void Invalidate(){ Valid = false;}
+	TBool IncludesAttr(const TStr& Attr){
+		for(int i = 0; i < GroupByAttrs.Len(); i++){
+			if(GroupByAttrs[i] == Attr){ return true;}
+		}
+		return false;
+	}
+	TSize GetMemUsed() const{
+		TSize sz = 3 * sizeof(TBool);
+		sz += GroupByAttrs.GetMemUsed();
+		for(int i = 0; i < GroupByAttrs.Len(); i++){
+			sz += GroupByAttrs[i].GetMemUsed();
+		}
+		return sz;
+	}
+	
+	int GetPrimHashCd() const{
+		int hc1 = GroupByAttrs.GetPrimHashCd();
+		TTriple<TBool,TBool,TBool> flags;
+		int hc2 = flags.GetPrimHashCd();
+		return TPairHashImpl::GetHashCd(hc1, hc2);
+	}
+	
+	int GetSecHashCd() const{
+		int hc1 = GroupByAttrs.GetSecHashCd();
+		TTriple<TBool,TBool,TBool> flags;
+		int hc2 = flags.GetSecHashCd();
+		return TPairHashImpl::GetHashCd(hc1, hc2);
+	}
+	
+	void Print(){
+		for(int i = 0; i < GroupByAttrs.Len(); i++){
+			printf("%s ", GroupByAttrs[i].CStr());
+		}
+		printf("Ordered: %d, UsePhysicalRows: %d, Valid: %d\n", Ordered.Val, UsePhysicalRowIds.Val, Valid.Val);
+	}
+};
+
+//#//////////////////////////////////////////////
 /// Iterator class for TTable rows. ##Iterator
 class TRowIterator{ 
   TInt CurrRowIdx; ///< Physical row index of current row pointed by iterator.
@@ -278,9 +339,11 @@ protected:
   TIntIntH RowIdMap; ///< Mapping of permanent row ids to physical id.
 
   // Group mapping data structures.
-  THash<TStr, TPair<TStrV, TBool> > GroupStmtNames; ///< Maps user-given grouping statement names to their group-by attributes. ##TTable::GroupStmtNames
-  THash<TPair<TStrV, TBool>, THash<TInt, TGroupKey> >GroupIDMapping; ///< Maps grouping statements to their (group id --> group-by key) mapping. ##TTable::GroupIDMapping
-  THash<TPair<TStrV, TBool>, THash<TGroupKey, TIntV> >GroupMapping; ///< Maps grouping statements to their (group-by key --> group id) mapping. ##TTable::GroupMapping
+  THash<TStr, GroupStmt > GroupStmtNames; ///< Maps user-given grouping statement names to their group-by attributes. ##TTable::GroupStmtNames
+  THash<GroupStmt, THash<TInt, TGroupKey> >GroupIDMapping; ///< Maps grouping statements to their (group id --> group-by key) mapping. ##TTable::GroupIDMapping
+  THash<GroupStmt, THash<TGroupKey, TIntV> >GroupMapping; ///< Maps grouping statements to their (group-by key --> group id) mapping. ##TTable::GroupMapping
+  void InvalidatePhysicalGroupings(); // to be called when rows are added / physically removed
+  void InvalidateAffectedGroupings(const TStr& Attr); // to be called when attributes are removed (projected) or values updated in-place
 
   // Fields to be used when constructing a graph.
   TStr SrcCol; ///< Column (attribute) to serve as src nodes when constructing the graph.
@@ -425,23 +488,26 @@ protected:
   void GroupingSanityCheck(const TStr& GroupBy, const TAttrType& AttrType) const;
   /// Groups/hashes by a single column with integer values. ##TTable::GroupByIntCol
   template <class T> void GroupByIntCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = true) const;
   #ifdef _OPENMP
+  public:	//Should be protected - this is for debug only
   /// Groups/hashes by a single column with integer values, using OpenMP multi-threading.
-  void GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping, TBool UsePhysicalIds = false) const;
+  void GroupByIntColMP(const TStr& GroupBy, THashMP<TInt, TIntV>& Grouping, TBool UsePhysicalIds = true) const;
   #endif // _OPENMP
+  protected:
   /// Groups/hashes by a single column with float values. Returns hash table with grouping.
   template <class T> void GroupByFltCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = true) const;
   /// Groups/hashes by a single column with string values. Returns hash table with grouping.
   template <class T> void GroupByStrCol(const TStr& GroupBy, T& Grouping, 
-    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = false) const;
+    const TIntV& IndexSet, TBool All, TBool UsePhysicalIds = true) const;
   /// Template for utility function to update a grouping hash map.
   template <class T> void UpdateGrouping(THash<T,TIntV>& Grouping, T Key, TInt Val) const;
   #ifdef _OPENMP
   /// Template for utility function to update a parallel grouping hash map.
   template <class T> void UpdateGrouping(THashMP<T,TIntV>& Grouping, T Key, TInt Val) const;
   #endif // _OPENMP
+  void PrintGrouping(const THash<TGroupKey, TIntV>& Grouping) const;
 
   /***** Utility functions for sorting by columns *****/
   /// Returns positive value if R1 is bigger, negative value if R2 is bigger, and 0 if they are equal (strcmp semantics).
@@ -515,7 +581,7 @@ protected:
 /***** Utility functions for Group *****/
   /// Helper function for grouping. ##TTable::GroupAux
   void GroupAux(const TStrV& GroupBy, THash<TGroupKey, TPair<TInt, TIntV> >& Grouping, 
-   TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec, TBool UsePhysicalIds = false);
+   TBool Ordered, const TStr& GroupColName, TBool KeepUnique, TIntV& UniqueVec, TBool UsePhysicalIds = true);
   #ifdef _OPENMP
   /// Parallel helper function for grouping. - we currently don't support such parallel grouping by complex keys
   //void GroupAuxMP(const TStrV& GroupBy, THashGenericMP<TGroupKey, TPair<TInt, TIntV> >& Grouping, 
@@ -523,6 +589,9 @@ protected:
   #endif // _OPENMP
   /// Stores column for a group. Physical row ids have to be passed.
   void StoreGroupCol(const TStr& GroupColName, const TVec<TPair<TInt, TInt> >& GroupAndRowIds);
+  /// Register (cache) result of a grouping statement by a single group-by attribute
+  /// T is a hash table mapping a key x to rows keyed by x  => DISABLED FOR NOW
+  //template<class T> void RegisterGrouping(const T& Grouping, const TStr& GroupByCol, TBool UsePhysicalRows);
 
   /// Reinitializes row ids.
   void Reindex();
@@ -841,7 +910,7 @@ public:
   }
 
   /// Groups rows depending on values of \c GroupBy columns. ##TTable::Group
-  void Group(const TStrV& GroupBy, const TStr& GroupColName, TBool Ordered = true, TBool UsePhysicalIds = false);
+  void Group(const TStrV& GroupBy, const TStr& GroupColName, TBool Ordered = true, TBool UsePhysicalIds = true);
   
   /// Counts number of unique elements. ##TTable::Count
   void Count(const TStr& CountColName, const TStr& Col);
@@ -898,6 +967,12 @@ public:
   // the argument table. Equivalent to SQL's: UPDATE this SET UpdateAttr = ReadAttr WHERE KeyAttr = FKeyAttr
   void UpdateFltFromTable(const TStr& KeyAttr, const TStr& UpdateAttr, const TTable& Table, 
   	const TStr& FKeyAttr, const TStr& ReadAttr, TFlt DefaultFltVal = 0.0);
+  #ifdef _OPENMP
+  void UpdateFltFromTableMP(const TStr& KeyAttr, const TStr& UpdateAttr, const TTable& Table, 
+  	const TStr& FKeyAttr, const TStr& ReadAttr, TFlt DefaultFltVal = 0.0);
+  // TODO: this should be a generic vector operation (parallel equivalent to TVec::PutAll)
+  void SetFltColToConstMP(TInt UpdateColIdx, TFlt DefaultFltVal);
+  #endif
 
   /// Returns union of this table with given \c Table.
   PTable Union(const TTable& Table);
@@ -923,7 +998,9 @@ public:
 
   /// Performs columnwise arithmetic operation ##TTable::ColGenericOp
   void ColGenericOp(const TStr& Attr1, const TStr& Attr2, const TStr& ResAttr, TArithOp op);
+  #ifdef _OPENMP
   void ColGenericOpMP(TInt ArgColIdx1, TInt ArgColIdx2, TAttrType ArgType1, TAttrType ArgType2, TInt ResColIdx, TArithOp op);
+  #endif
   /// Performs columnwise addition. See TTable::ColGenericOp
   void ColAdd(const TStr& Attr1, const TStr& Attr2, const TStr& ResultAttrName="");
   /// Performs columnwise subtraction. See TTable::ColGenericOp
@@ -942,6 +1019,8 @@ public:
   /// Performs columnwise arithmetic operation with column of given table.
   void ColGenericOp(const TStr& Attr1, TTable& Table, const TStr& Attr2, const TStr& ResAttr, 
     TArithOp op, TBool AddToFirstTable);
+  // void ColGenericOpMP(TTable& Table, TBool AddToFirstTable, TInt ArgColIdx1, TInt ArgColIdx2,
+  //  TAttrType ArgType1, TAttrType ArgType2, TInt ResColIdx, TArithOp op);
   /// Performs columnwise addition with column of given table.
   void ColAdd(const TStr& Attr1, TTable& Table, const TStr& Attr2, const TStr& ResAttr="",
     TBool AddToFirstTable=true);
@@ -960,6 +1039,9 @@ public:
 
   /// Performs arithmetic op of column values and given \c Num
   void ColGenericOp(const TStr& Attr1, const TFlt& Num, const TStr& ResAttr, TArithOp op, const TBool floatCast);
+  #ifdef _OPENMP
+  void ColGenericOpMP(TInt ColIdx1, TInt ColIdx2, TAttrType ArgType, TFlt Num, TArithOp op, TBool ShouldCast);
+  #endif
   /// Performs addition of column values and given \c Num
   void ColAdd(const TStr& Attr1, const TFlt& Num, const TStr& ResultAttrName="", const TBool floatCast=false);
   /// Performs subtraction of column values and given \c Num
@@ -1215,14 +1297,29 @@ void TTable::UpdateGrouping(THash<T,TIntV>& Grouping, T Key, TInt Val) const{
 template <class T>
 void TTable::UpdateGrouping(THashMP<T,TIntV>& Grouping, T Key, TInt Val) const{
   if (Grouping.IsKey(Key)) {
+  	//printf("y\n");
     Grouping.GetDat(Key).Add(Val);
   } else {
+  	//printf("n\n");
     TIntV NewGroup;
     NewGroup.Add(Val);
     Grouping.AddDat(Key, NewGroup);
   }
 }
 #endif // _OPENMP
+
+/*
+template<class T> 
+void TTable::RegisterGrouping(const T& Grouping, const TStr& GroupByCol, TBool UsePhysicalIds){
+	TStrV GroupByVec;
+	GroupByVec.Add(GroupByCol);
+	GroupStmt Stmt(NormalizeColNameV(GroupByVec), true, UsePhysicalIds);
+	GroupMapping.AddKey(Stmt);
+	for(T::TIter it = Grouping.BegI(); it < Grouping.EndI(); it++){
+		GroupMapping.GetDat(Stmt).AddDat(it.GetKey(), TIntV(it.GetDat()));
+	}
+}
+*/
 
 namespace TSnap {
 
