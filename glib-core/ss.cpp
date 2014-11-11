@@ -674,6 +674,6 @@ double TSsParserMP::GetFltFromFldV(TVec<char*>& FieldsV, const int& FldN) {
     if (! TCh::IsNum(*c)) { return -1; }
     while (TCh::IsNum(*c)) { c++; }
   }
-  if (*c != 0) { return -1; }
+  if (!TCh::IsWs(*c) && *c != 0) { return -1; }
   return atof(FieldsV[FldN]);
 }
