@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
     TSnap::GetWeightedPageRankMP1(G, PRankH, name, 0.85, 1e-4, 10);
   }
   end = omp_get_wtime();
-  printf("%d samples of WeightedPageRankMP1 took %f seconds\n", num_iterations, 
+  printf("%d samples of WeightedPageRankMP1 took %f seconds\n", num_iterations,
+    (end-start));
   printf("Time per sample %f\n", ((end-start)/num_iterations));
 
   // Run num_iterations samples of WeightedPageRankMP2
@@ -47,7 +48,8 @@ int main(int argc, char* argv[]) {
     TSnap::GetWeightedPageRankMP2(G, WPRankH, name, 0.85, 1e-4, 10);
   }
   end = omp_get_wtime();
-  printf("%d samples of WeightedPageRankMP2 took %f secs\n", num_iterations, (en
+  printf("%d samples of WeightedPageRankMP2 took %f secs\n", num_iterations,
+    (end - start));
   printf("Time per sample %f\n", ((end-start)/num_iterations));
   return 0;
 }
