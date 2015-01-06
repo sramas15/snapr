@@ -1039,3 +1039,611 @@ bool TNEANet::IsStrAttrE(const TStr& attr) {
   return (KeyToIndexTypeE.IsKey(attr) && 
     KeyToIndexTypeE.GetDat(attr).Val1 == StrType);
 }
+
+/////////////////////////////////////////////////
+// Attribute Node Edge Network
+bool TNEANetSparse1::HasFlag(const TGraphFlag& Flag) const {
+  return HasGraphFlag(TNEANetSparse1::TNet, Flag);
+}
+
+bool TNEANetSparse1::TNodeI::IsInNId(const int& NId) const {
+  const TNode& Node = NodeHI.GetDat();
+  for (int edge = 0; edge < Node.GetInDeg(); edge++) {
+    if (NId == Graph->GetEdge(Node.GetInEId(edge)).GetSrcNId())
+      return true;
+  }
+  return false;
+}
+
+bool TNEANetSparse1::TNodeI::IsOutNId(const int& NId) const {
+  const TNode& Node = NodeHI.GetDat();
+  for (int edge = 0; edge < Node.GetOutDeg(); edge++) {
+    if (NId == Graph->GetEdge(Node.GetOutEId(edge)).GetDstNId())
+      return true;
+  }
+  return false;
+}
+
+void TNEANetSparse1::AttrNameNI(const TInt& NId, TStrV& Names) const {
+  //FILL IN
+  Names = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumIntAttrs(); i++) {
+    Names.Add(Node.GetIntAttrNameAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Node.GetNumStrAttrs(); i++) {
+    Names.Add(Node.GetStrAttrNameAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Node.GetNumFltAttrs(); i++) {
+    Names.Add(Node.GetFltAttrNameAtInd(i).GetStr());
+  }
+}
+
+void TNEANetSparse1::AttrValueNI(const TInt& NId , TStrV& Values) const {
+  Values = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumIntAttrs(); i++) {
+    Values.Add(Node.GetIntAttrAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Node.GetNumStrAttrs(); i++) {
+    Values.Add(Node.GetStrAttrAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Node.GetNumFltAttrs(); i++) {
+    Values.Add(Node.GetFltAttrAtInd(i).GetStr());
+  }
+  //FILL IN
+
+}
+
+void TNEANetSparse1::IntAttrNameNI(const TInt& NId, TStrV& Names) const {
+  //FILL IN
+  Names = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumIntAttrs(); i++) {
+    Names.Add(Node.GetIntAttrNameAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Node.GetNumStrAttrs(); i++) {
+    Names.Add(Node.GetStrAttrAtInd(i));
+  }
+  for (int i = 0; i < Node.GetNumFltAttrs(); i++) {
+    Names.Add(Node.GetFltAttrAtInd(i).GetStr());
+  }
+}
+
+void TNEANetSparse1::IntAttrValueNI(const TInt& NId, TIntV& Values) const {
+  //FILL IN 
+  Values = TVec<TInt>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumIntAttrs(); i++) {
+    Values.Add(Node.GetIntAttrAtInd(i));
+  }
+}
+
+void TNEANetSparse1::StrAttrNameNI(const TInt& NId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumStrAttrs(); i++) {
+    Names.Add(Node.GetStrAttrNameAtInd(i));
+  }
+  //FILL IN  
+}
+
+void TNEANetSparse1::StrAttrValueNI(const TInt& NId, TStrV& Values) const {
+  Values = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumStrAttrs(); i++) {
+    Values.Add(Node.GetStrAttrAtInd(i));
+  }
+  //FILL IN 
+}
+
+void TNEANetSparse1::FltAttrNameNI(const TInt& NId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumFltAttrs(); i++) {
+    Names.Add(Node.GetFltAttrNameAtInd(i));
+  }
+  //FILL IN  
+}
+
+void TNEANetSparse1::FltAttrValueNI(const TInt& NId, TFltV& Values) const {
+  Values = TVec<TFlt>();
+  TNode Node = NodeH.GetDat(NId);
+  for (int i = 0; i < Node.GetNumFltAttrs(); i++) {
+    Values.Add(Node.GetFltAttrAtInd(i));
+  }
+  /*THash<TInt, TNode>::TIter Nodes = NodeH.BegNI();
+  while(!Nodes.IsEnd()) {
+    TFlt val = NodeHI.GetDat().
+    Values.Add()
+  }*/
+  //FILL IN 
+  /*while (!NodeHI.IsEnd()) {
+    if (NodeHI.GetDat().Val1 == FltType && !NodeAttrIsFltDeleted(NId, NodeHI)) {
+      TFlt val = (this->VecOfFltVecsN.GetVal(NodeHI.GetDat().Val2).GetVal(NodeH.GetKeyId(NId)));
+      Values.Add(val);
+    }
+    NodeHI++;
+  } */ 
+}
+
+void TNEANetSparse1::AttrNameEI(const TInt& EId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Names.Add(Edge.GetIntAttrNameAtInd(i));
+  }
+  for (int i = 0; i < Edge.GetNumStrAttrs(); i++) {
+    Names.Add(Edge.GetStrAttrNameAtInd(i));
+  }
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Names.Add(Edge.GetFltAttrNameAtInd(i));
+  } 
+  //FILL IN  
+}
+
+void TNEANetSparse1::AttrValueEI(const TInt& EId, TStrV& Values) const {
+  Values = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Values.Add(Edge.GetIntAttrAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Edge.GetNumStrAttrs(); i++) {
+    Values.Add(Edge.GetStrAttrAtInd(i).GetStr());
+  }
+  for (int i = 0; i < Edge.GetNumFltAttrs(); i++) {
+    Values.Add(Edge.GetFltAttrAtInd(i).GetStr());
+  } 
+  //FILL IN 
+}
+
+void TNEANetSparse1::IntAttrNameEI(const TInt& EId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Names.Add(Edge.GetIntAttrNameAtInd(i));
+  } 
+}
+
+void TNEANetSparse1::IntAttrValueEI(const TInt& EId, TIntV& Values) const {
+  Values = TVec<TInt>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Values.Add(Edge.GetIntAttrAtInd(i));
+  }
+}
+
+void TNEANetSparse1::StrAttrNameEI(const TInt& EId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumStrAttrs(); i++) {
+    Names.Add(Edge.GetStrAttrNameAtInd(i));
+  }
+}
+
+void TNEANetSparse1::StrAttrValueEI(const TInt& EId, TStrV& Values) const {
+  Values = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumStrAttrs(); i++) {
+    Values.Add(Edge.GetStrAttrAtInd(i));
+  } 
+}
+
+void TNEANetSparse1::FltAttrNameEI(const TInt& EId, TStrV& Names) const {
+  Names = TVec<TStr>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumIntAttrs(); i++) {
+    Names.Add(Edge.GetFltAttrNameAtInd(i));
+  } 
+}
+
+void TNEANetSparse1::FltAttrValueEI(const TInt& EId, TFltV& Values) const {
+  Values = TVec<TFlt>();
+  TEdge Edge = EdgeH.GetDat(EId);
+  for (int i = 0; i < Edge.GetNumFltAttrs(); i++) {
+    Values.Add(Edge.GetFltAttrAtInd(i));
+  } 
+}
+
+int TNEANetSparse1::AddNode(int NId) {
+  int i;
+  if (NId == -1) {
+    NId = MxNId;  MxNId++;
+  } else {
+    IAssertR(!IsNode(NId), TStr::Fmt("NodeId %d already exists", NId));
+    MxNId = TMath::Mx(NId+1, MxNId());
+  }
+  NodeH.AddDat(NId, TNode(NId));
+  return NId;
+}
+
+void TNEANetSparse1::DelNode(const int& NId) {
+  int i;
+  const TNode& Node = GetNode(NId);
+  for (int out = 0; out < Node.GetOutDeg(); out++) {
+    const int EId = Node.GetOutEId(out);
+    const TEdge& Edge = GetEdge(EId);
+    IAssert(Edge.GetSrcNId() == NId);
+    GetNode(Edge.GetDstNId()).InEIdV.DelIfIn(EId);
+    EdgeH.DelKey(EId);
+  }
+  for (int in = 0; in < Node.GetInDeg(); in++) {
+    const int EId = Node.GetInEId(in);
+    const TEdge& Edge = GetEdge(EId);
+    IAssert(Edge.GetDstNId() == NId);
+    GetNode(Edge.GetSrcNId()).OutEIdV.DelIfIn(EId);
+    EdgeH.DelKey(EId);
+  }
+  NodeH.DelKey(NId);
+}
+
+int TNEANetSparse1::AddEdge(const int& SrcNId, const int& DstNId, int EId) {
+  int i;
+
+  if (EId == -1) { EId = MxEId;  MxEId++; }
+  else { MxEId = TMath::Mx(EId+1, MxEId()); }
+  IAssertR(!IsEdge(EId), TStr::Fmt("EdgeId %d already exists", EId));
+  IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("%d or %d not a node.", SrcNId, DstNId).CStr());
+  EdgeH.AddDat(EId, TEdge(EId, SrcNId, DstNId));
+  GetNode(SrcNId).OutEIdV.AddSorted(EId);
+  GetNode(DstNId).InEIdV.AddSorted(EId);
+  return EId;
+}
+
+void TNEANetSparse1::DelEdge(const int& EId) {
+  int i;
+
+  IAssert(IsEdge(EId));
+  const int SrcNId = GetEdge(EId).GetSrcNId();
+  const int DstNId = GetEdge(EId).GetDstNId();
+  GetNode(SrcNId).OutEIdV.DelIfIn(EId);
+  GetNode(DstNId).InEIdV.DelIfIn(EId);
+  EdgeH.DelKey(EId);
+}
+
+// delete all edges between the two nodes
+void TNEANetSparse1::DelEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) {
+  int EId = 0;
+  bool Edge = IsEdge(SrcNId, DstNId, EId, IsDir);
+  IAssert(Edge); // there is at least one edge
+  while (Edge) {
+    DelEdge(EId);
+    Edge = IsEdge(SrcNId, DstNId, EId, IsDir);
+  }
+}
+
+bool TNEANetSparse1::IsEdge(const int& SrcNId, const int& DstNId, int& EId, const bool& IsDir) const {
+  const TNode& SrcNode = GetNode(SrcNId);
+  for (int edge = 0; edge < SrcNode.GetOutDeg(); edge++) {
+    const TEdge& Edge = GetEdge(SrcNode.GetOutEId(edge));
+    if (DstNId == Edge.GetDstNId()) {
+      EId = Edge.GetId();
+      return true;
+    }
+  }
+  if (! IsDir) {
+    for (int edge = 0; edge < SrcNode.GetInDeg(); edge++) {
+      const TEdge& Edge = GetEdge(SrcNode.GetInEId(edge));
+      if (DstNId == Edge.GetSrcNId()) {
+        EId = Edge.GetId();
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void TNEANetSparse1::GetNIdV(TIntV& NIdV) const {
+  NIdV.Gen(GetNodes(), 0);
+  for (int N=NodeH.FFirstKeyId(); NodeH.FNextKeyId(N); ) {
+    NIdV.Add(NodeH.GetKey(N));
+  }
+}
+
+void TNEANetSparse1::GetEIdV(TIntV& EIdV) const {
+  EIdV.Gen(GetEdges(), 0);
+  for (int E=EdgeH.FFirstKeyId(); EdgeH.FNextKeyId(E); ) {
+    EIdV.Add(EdgeH.GetKey(E));
+  }
+}
+
+void TNEANetSparse1::Defrag(const bool& OnlyNodeLinks) {
+  for (int kid = NodeH.FFirstKeyId(); NodeH.FNextKeyId(kid); ) {
+    TNode& Node = NodeH[kid];
+    Node.InEIdV.Pack();  Node.OutEIdV.Pack();
+  }
+  if (! OnlyNodeLinks && ! NodeH.IsKeyIdEqKeyN()) { NodeH.Defrag(); }
+  if (! OnlyNodeLinks && ! EdgeH.IsKeyIdEqKeyN()) { EdgeH.Defrag(); }
+}
+
+bool TNEANetSparse1::IsOk(const bool& ThrowExcept) const {
+  bool RetVal = true;
+  for (int N = NodeH.FFirstKeyId(); NodeH.FNextKeyId(N); ) {
+    const TNode& Node = NodeH[N];
+    if (! Node.OutEIdV.IsSorted()) {
+      const TStr Msg = TStr::Fmt("Out-edge list of node %d is not sorted.", Node.GetId());
+      if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+    }
+    if (! Node.InEIdV.IsSorted()) {
+      const TStr Msg = TStr::Fmt("In-edge list of node %d is not sorted.", Node.GetId());
+      if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+    }
+    // check out-edge ids
+    int prevEId = -1;
+    for (int e = 0; e < Node.GetOutDeg(); e++) {
+      if (! IsEdge(Node.GetOutEId(e))) {
+        const TStr Msg = TStr::Fmt("Out-edge id %d of node %d does not exist.",  Node.GetOutEId(e), Node.GetId());
+        if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+      }
+      if (e > 0 && prevEId == Node.GetOutEId(e)) {
+        const TStr Msg = TStr::Fmt("Node %d has duplidate out-edge id %d.", Node.GetId(), Node.GetOutEId(e));
+        if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+      }
+      prevEId = Node.GetOutEId(e);
+    }
+    // check in-edge ids
+    prevEId = -1;
+    for (int e = 0; e < Node.GetInDeg(); e++) {
+      if (! IsEdge(Node.GetInEId(e))) {
+      const TStr Msg = TStr::Fmt("Out-edge id %d of node %d does not exist.",  Node.GetInEId(e), Node.GetId());
+      if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+      }
+      if (e > 0 && prevEId == Node.GetInEId(e)) {
+        const TStr Msg = TStr::Fmt("Node %d has duplidate out-edge id %d.", Node.GetId(), Node.GetInEId(e));
+        if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+      }
+      prevEId = Node.GetInEId(e);
+    }
+  }
+  for (int E = EdgeH.FFirstKeyId(); EdgeH.FNextKeyId(E); ) {
+    const TEdge& Edge = EdgeH[E];
+    if (! IsNode(Edge.GetSrcNId())) {
+      const TStr Msg = TStr::Fmt("Edge %d source node %d does not exist.", Edge.GetId(), Edge.GetSrcNId());
+      if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+    }
+    if (! IsNode(Edge.GetDstNId())) {
+      const TStr Msg = TStr::Fmt("Edge %d destination node %d does not exist.", Edge.GetId(), Edge.GetDstNId());
+      if (ThrowExcept) { EAssertR(false, Msg); } else { ErrNotify(Msg.CStr()); } RetVal=false;
+    }
+  }
+  return RetVal;
+}
+
+void TNEANetSparse1::Dump(FILE *OutF) const {
+  const int NodePlaces = (int) ceil(log10((double) GetNodes()));
+  const int EdgePlaces = (int) ceil(log10((double) GetEdges()));
+  fprintf(OutF, "-------------------------------------------------\nDirected Node-Edge Network: nodes: %d, edges: %d\n", GetNodes(), GetEdges());
+  for (TNodeI NodeI = BegNI(); NodeI < EndNI(); NodeI++) {
+    fprintf(OutF, "  %*d]\n", NodePlaces, NodeI.GetId());
+    // load node attributes
+    TIntV IntAttrN;
+    IntAttrValueNI(NodeI.GetId(), IntAttrN);
+    fprintf(OutF, "    nai[%d]", IntAttrN.Len());
+    for (int i = 0; i < IntAttrN.Len(); i++) {
+      fprintf(OutF, " %*i", NodePlaces, IntAttrN[i]()); }
+    TStrV StrAttrN;
+    StrAttrValueNI(NodeI.GetId(), StrAttrN);
+    fprintf(OutF, "    nas[%d]", StrAttrN.Len());
+    for (int i = 0; i < StrAttrN.Len(); i++) {
+      fprintf(OutF, " %*s", NodePlaces, StrAttrN[i]()); }
+    TFltV FltAttrN;
+    FltAttrValueNI(NodeI.GetId(), FltAttrN);
+    fprintf(OutF, "    naf[%d]", FltAttrN.Len());
+    for (int i = 0; i < FltAttrN.Len(); i++) {
+      fprintf(OutF, " %*f", NodePlaces, FltAttrN[i]()); }
+
+    fprintf(OutF, "    in[%d]", NodeI.GetInDeg());
+    for (int edge = 0; edge < NodeI.GetInDeg(); edge++) {
+      fprintf(OutF, " %*d", EdgePlaces, NodeI.GetInEId(edge)); }
+    fprintf(OutF, "\n");
+    fprintf(OutF, "    out[%d]", NodeI.GetOutDeg());
+    for (int edge = 0; edge < NodeI.GetOutDeg(); edge++) {
+      fprintf(OutF, " %*d", EdgePlaces, NodeI.GetOutEId(edge)); }
+    fprintf(OutF, "\n");
+  }
+  for (TEdgeI EdgeI = BegEI(); EdgeI < EndEI(); EdgeI++) {
+    fprintf(OutF, "  %*d]  %*d  ->  %*d", EdgePlaces, EdgeI.GetId(), NodePlaces, EdgeI.GetSrcNId(), NodePlaces, EdgeI.GetDstNId());
+
+    // load edge attributes
+    TIntV IntAttrE;
+    IntAttrValueEI(EdgeI.GetId(), IntAttrE);
+    fprintf(OutF, "    eai[%d]", IntAttrE.Len());
+    for (int i = 0; i < IntAttrE.Len(); i++) {
+      fprintf(OutF, " %*i", EdgePlaces, IntAttrE[i]()); 
+    }
+    TStrV StrAttrE;
+    StrAttrValueEI(EdgeI.GetId(), StrAttrE);
+    fprintf(OutF, "    eas[%d]", StrAttrE.Len());
+    for (int i = 0; i < StrAttrE.Len(); i++) {
+      fprintf(OutF, " %*s", EdgePlaces, StrAttrE[i]()); 
+    }
+    TFltV FltAttrE;
+    FltAttrValueEI(EdgeI.GetId(), FltAttrE);
+    fprintf(OutF, "    eaf[%d]", FltAttrE.Len());
+    for (int i = 0; i < FltAttrE.Len(); i++) {
+      fprintf(OutF, " %*f", EdgePlaces, FltAttrE[i]()); 
+    }
+    fprintf(OutF, "\n");
+  }
+  fprintf(OutF, "\n");
+}
+
+// Attribute related function
+
+int TNEANetSparse1::AddIntAttrDatN(const int& NId, const TInt& value, const TStr& attr) {
+  if (!IsNode(NId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TNode& Node = NodeH.GetDat(NId);
+  int index = Node.GetIntAttrInd(attr);
+  if (index == -1) {
+    Node.IntAttrNames.Add(attr);
+    Node.IntAttrs.Add(value);
+  } else {
+    Node.IntAttrs.SetVal(index, value);
+  }
+} 
+
+int TNEANetSparse1::AddStrAttrDatN(const int& NId, const TStr& value, const TStr& attr) {
+  if (!IsNode(NId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TNode& Node = NodeH.GetDat(NId);
+  int index = Node.GetStrAttrInd(attr);
+  if (index == -1) {
+    Node.StrAttrNames.Add(attr);
+    Node.StrAttrs.Add(value);
+  } else {
+    Node.StrAttrs.SetVal(index, value);
+  }
+} 
+
+int TNEANetSparse1::AddFltAttrDatN(const int& NId, const TFlt& value, const TStr& attr) {
+  if (!IsNode(NId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TNode& Node = NodeH.GetDat(NId);
+  int index = Node.GetFltAttrInd(attr);
+  if (index == -1) {
+    Node.FltAttrNames.Add(attr);
+    Node.FltAttrs.Add(value);
+  } else {
+    Node.FltAttrs.SetVal(index, value);
+  }
+} 
+
+int TNEANetSparse1::AddIntAttrDatE(const int& EId, const TInt& value, const TStr& attr) {
+  if (!IsEdge(EId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TEdge& Edge = EdgeH.GetDat(EId);
+  int index = Edge.GetIntAttrInd(attr);
+  if (index == -1) {
+    Edge.IntAttrNames.Add(attr);
+    Edge.IntAttrs.Add(value);
+  } else {
+    Edge.IntAttrs.SetVal(index, value);
+  }
+} 
+
+int TNEANetSparse1::AddStrAttrDatE(const int& EId, const TStr& value, const TStr& attr) {
+  if (!IsEdge(EId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TEdge& Edge = EdgeH.GetDat(EId);
+  int index = Edge.GetStrAttrInd(attr);
+  if (index == -1) {
+    Edge.StrAttrNames.Add(attr);
+    Edge.StrAttrs.Add(value);
+  } else {
+    Edge.StrAttrs.SetVal(index, value);
+  }
+} 
+
+int TNEANetSparse1::AddFltAttrDatE(const int& EId, const TFlt& value, const TStr& attr) {
+  if (!IsEdge(EId)) {
+    // AddNode(NId);
+    return -1;
+  }
+  TEdge& Edge = EdgeH.GetDat(EId);
+  int index = Edge.GetFltAttrInd(attr);
+  if (index == -1) {
+    Edge.FltAttrNames.Add(attr);
+    Edge.FltAttrs.Add(value);
+  } else {
+    Edge.FltAttrs.SetVal(index, value);
+  }
+}
+
+TInt TNEANetSparse1::GetIntAttrDatN(const int& NId, const TStr& attr) {
+  //FILL IN
+  //TEdge& Edge = EdgeH.GetDat(EId);
+  TNode& Node = NodeH.GetDat(NId);
+  return Node.GetIntAttr(attr);
+}
+
+TStr TNEANetSparse1::GetStrAttrDatN(const int& NId, const TStr& attr) {
+  //FILL IN
+  TNode& Node = NodeH.GetDat(NId);
+  return Node.GetStrAttr(attr);
+}
+
+TFlt TNEANetSparse1::GetFltAttrDatN(const int& NId, const TStr& attr) {
+  TNode& Node = NodeH.GetDat(NId);
+  return Node.GetFltAttr(attr);
+}
+
+TInt TNEANetSparse1::GetIntAttrDatE(const int& EId, const TStr& attr) {
+  //FILL IN
+  TEdge& Edge = EdgeH.GetDat(EId);
+  return Edge.GetIntAttr(attr);
+}
+
+TStr TNEANetSparse1::GetStrAttrDatE(const int& EId, const TStr& attr) {
+  //FILL IN
+  TEdge& Edge = EdgeH.GetDat(EId);
+  return Edge.GetStrAttr(attr);
+}
+
+TFlt TNEANetSparse1::GetFltAttrDatE(const int& EId, const TStr& attr) {
+  //FILL IN
+  TEdge& Edge = EdgeH.GetDat(EId);
+  return Edge.GetFltAttr(attr);
+}
+
+int TNEANetSparse1::DelAttrDatN(const int& NId, const TStr& attr) {
+  TNode& Node = NodeH.GetDat(NId);
+  int index = Node.GetIntAttrInd(attr);
+  if (index != -1) {
+    Node.IntAttrs.Del(index);
+    return 0;
+  }
+  index = Node.GetStrAttrInd(attr);
+  if (index != -1) {
+    Node.StrAttrs.Del(index);
+    return 0;
+  }
+  index = Node.GetFltAttrInd(attr);
+  if (index != -1) {
+    Node.FltAttrs.Del(index);
+    return 0;
+  }
+  return -1;
+  //FILL IN
+}
+             
+int TNEANetSparse1::DelAttrDatE(const int& EId, const TStr& attr) {
+  TEdge& Edge = EdgeH.GetDat(EId);
+  int index = Edge.GetIntAttrInd(attr);
+  if (index != -1) {
+    Edge.IntAttrs.Del(index);
+    return 0;
+  }
+  index = Edge.GetStrAttrInd(attr);
+  if (index != -1) {
+    Edge.StrAttrs.Del(index);
+    return 0;
+  }
+  index = Edge.GetFltAttrInd(attr);
+  if (index != -1) {
+    Edge.FltAttrs.Del(index);
+    return 0;
+  }
+  return -1;
+  //FILL IN
+}
+
+// Return a small graph on 5 nodes and 6 edges.
+PNEANetSparse1 TNEANetSparse1::GetSmallGraph() {
+  PNEANetSparse1 Net = TNEANetSparse1::New();
+  for (int i = 0; i < 5; i++) { Net->AddNode(i); }
+  Net->AddEdge(0,1);  Net->AddEdge(0,2);
+  Net->AddEdge(0,3);  Net->AddEdge(0,4);
+  Net->AddEdge(1,2);  Net->AddEdge(1,2);
+  return Net;
+}
