@@ -551,6 +551,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVIntI(AttrIds, Attrs, false, Graph); 
   }
@@ -564,6 +565,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVStrI(AttrIds, Attrs, false, Graph); 
   }
@@ -577,6 +579,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVFltI(AttrIds, Attrs, false, Graph); 
   }
@@ -591,6 +594,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVIntI(AttrIds, Attrs, true, Graph);
   }
@@ -604,6 +608,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVStrI(AttrIds, Attrs, true, Graph);
   }
@@ -617,6 +622,141 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
         AttrIds.Add(It.GetKey().GetVal2());
         Attrs.Add(It.GetDat());
       }
+      It++;
     }
     return TAVFltI(AttrIds, Attrs, true, Graph);
+  }
+
+    /// Returns a vector of attr names for node NId.
+  void TNEANetSparse2::AttrNameNI(const TInt& NId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::AttrValueNI(const TInt& NId, TStrV& Values) const {
+
+  }
+  /// Returns a vector of int attr names for node NId.
+  void TNEANetSparse2::IntAttrNameNI(const TInt& NId, TStrV& Names) const {
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Names.Add(GetAttrNameN(It.GetKey().GetVal2());
+      }
+      It++;
+    }
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::IntAttrValueNI(const TInt& NId, TIntV& Values) const {
+    Values = TVec<TInt>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
+
+  }
+  /*
+  TIntV AttrIds = TVec<TInt>();
+    TStrV Attrs = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        AttrIds.Add(It.GetKey().GetVal2());
+        Attrs.Add(It.GetDat());
+      }
+      It++;
+    }
+    return TAVStrI(AttrIds, Attrs, false, Graph); 
+  }
+  /// Returns a vector of int attr names for node NId.
+  void TNEANetSparse2::FltAttrNI(const TInt& NId) const {
+    TIntV AttrIds = TVec<TInt>();
+    TFltV Attrs = TVec<TFlt>();
+    THash<TPair<TInt, TInt>, TFlt>::TIter It = FltAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        AttrIds.Add(It.GetKey().GetVal2());
+        Attrs.Add(It.GetDat());
+      }
+      It++;
+    }
+    return TAVFltI(AttrIds, Attrs, false, Graph); 
+  */
+  /// Returns a vector of str attr names for node NId.
+  void TNEANetSparse2::StrAttrNameNI(const TInt& NId, TStrV& Names) const {
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Names.Add(It.GetKey().GetVal2());
+      }
+      It++;
+    }
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::StrAttrValueNI(const TInt& NId, TStrV& Values) const {
+    Values = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
+
+  } 
+  /// Returns a vector of int attr names for node NId.
+  void TNEANetSparse2::FltAttrNameNI(const TInt& NId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::FltAttrValueNI(const TInt& NId, TFltV& Values) const {
+
+  } 
+
+  /// Returns a vector of attr names for edge EId.
+  void TNEANetSparse2::AttrNameEI(const TInt& EId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for edge EId.
+  void TNEANetSparse2::AttrValueEI(const TInt& EId, TStrV& Values) const {
+
+  }
+  /// Returns a vector of int attr names for edge EId.
+  void TNEANetSparse2::IntAttrNameEI(const TInt& EId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for edge EId.
+  void TNEANetSparse2::IntAttrValueEI(const TInt& EId, TIntV& Values) const {
+
+  } 
+  /// Returns a vector of str attr names for node NId.
+  void TNEANetSparse2::StrAttrNameEI(const TInt& EId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::StrAttrValueEI(const TInt& EId, TStrV& Values) const {
+
+  } 
+  /// Returns a vector of int attr names for node NId.
+  void TNEANetSparse2::FltAttrNameEI(const TInt& EId, TStrV& Names) const {
+
+  }
+  /// Returns a vector of attr values for node NId.
+  void TNEANetSparse2::FltAttrValueEI(const TInt& EId, TFltV& Values) const {
+
+
+  }
+    // Returns node attribute value, converted to Str type.
+  TStr TNEANetSparse2::GetNodeAttrValue(const int& NId, const TStr Name) const {
+
+  }
+  // Returns edge attribute value, converted to Str type.
+  TStr TNEANetSparse2::GetEdgeAttrValue(const int& EId, const TStr Name) const {
+
   }
