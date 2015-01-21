@@ -629,10 +629,54 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
 
     /// Returns a vector of attr names for node NId.
   void TNEANetSparse2::AttrNameNI(const TInt& NId, TStrV& Names) const {
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Names.Add(GetAttrNameN(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
+    THash<TPair<TInt, TInt>, TStr>::TIter It2 = StrAttrsN.BegI();
+    while (!It2.IsEnd()) {
+      if(It2.GetKey().GetVal1() == NId) {
+        Names.Add(GetAttrNameN(It2.GetKey().GetVal2()));
+      }
+      It2++;
+    }
+    THash<TPair<TInt, TInt>, TFlt>::TIter It3 = FltAttrsN.BegI();
+    while (!It3.IsEnd()) {
+      if(It3.GetKey().GetVal1() == NId) {
+        Names.Add(GetAttrNameN(It3.GetKey().GetVal2()));
+      }
+      It3++;
+    }
 
   }
   /// Returns a vector of attr values for node NId.
   void TNEANetSparse2::AttrValueNI(const TInt& NId, TStrV& Values) const {
+    Values = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Values.Add(It.GetDat().GetStr());
+      }
+      It++;
+    }
+    THash<TPair<TInt, TInt>, TStr>::TIter It2 = StrAttrsN.BegI();
+    while (!It2.IsEnd()) {
+      if(It2.GetKey().GetVal1() == NId) {
+        Values.Add(It2.GetDat());
+      }
+      It2++;
+    }
+    THash<TPair<TInt, TInt>, TFlt>::TIter It3 = FltAttrsN.BegI();
+    while (!It3.IsEnd()) {
+      if(It3.GetKey().GetVal1() == NId) {
+        Values.Add(It3.GetDat().GetStr());
+      }
+      It3++;
+    }
 
   }
   /// Returns a vector of int attr names for node NId.
@@ -641,7 +685,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
     THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsN.BegI();
     while (!It.IsEnd()) {
       if(It.GetKey().GetVal1() == NId) {
-        Names.Add(GetAttrNameN(It.GetKey().GetVal2());
+        Names.Add(GetAttrNameN(It.GetKey().GetVal2()));
       }
       It++;
     }
@@ -692,7 +736,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
     THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsN.BegI();
     while (!It.IsEnd()) {
       if(It.GetKey().GetVal1() == NId) {
-        Names.Add(It.GetKey().GetVal2());
+        Names.Add(GetAttrNameN(It.GetKey().GetVal2()));
       }
       It++;
     }
@@ -712,51 +756,183 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
   } 
   /// Returns a vector of int attr names for node NId.
   void TNEANetSparse2::FltAttrNameNI(const TInt& NId, TStrV& Names) const {
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TFlt>::TIter It = FltAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Names.Add(GetAttrNameN(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
 
   }
   /// Returns a vector of attr values for node NId.
   void TNEANetSparse2::FltAttrValueNI(const TInt& NId, TFltV& Values) const {
-
+    Values = TVec<TFlt>();
+    THash<TPair<TInt, TInt>, TFlt>::TIter It = FltAttrsN.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == NId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
   } 
 
   /// Returns a vector of attr names for edge EId.
   void TNEANetSparse2::AttrNameEI(const TInt& EId, TStrV& Names) const {
-
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
+    THash<TPair<TInt, TInt>, TStr>::TIter It2 = StrAttrsE.BegI();
+    while (!It2.IsEnd()) {
+      if(It2.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It2.GetKey().GetVal2()));
+      }
+      It2++;
+    }
+    THash<TPair<TInt, TInt>, TFlt>::TIter It3 = FltAttrsE.BegI();
+    while (!It3.IsEnd()) {
+      if(It3.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It3.GetKey().GetVal2()));
+      }
+      It3++;
+    }
   }
   /// Returns a vector of attr values for edge EId.
   void TNEANetSparse2::AttrValueEI(const TInt& EId, TStrV& Values) const {
-
+    Values = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Values.Add(It.GetDat().GetStr());
+      }
+      It++;
+    }
+    THash<TPair<TInt, TInt>, TStr>::TIter It2 = StrAttrsE.BegI();
+    while (!It2.IsEnd()) {
+      if(It2.GetKey().GetVal1() == EId) {
+        Values.Add(It2.GetDat());
+      }
+      It2++;
+    }
+    THash<TPair<TInt, TInt>, TFlt>::TIter It3 = FltAttrsE.BegI();
+    while (!It3.IsEnd()) {
+      if(It3.GetKey().GetVal1() == EId) {
+        Values.Add(It3.GetDat().GetStr());
+      }
+      It3++;
+    }
   }
   /// Returns a vector of int attr names for edge EId.
   void TNEANetSparse2::IntAttrNameEI(const TInt& EId, TStrV& Names) const {
-
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
   }
   /// Returns a vector of attr values for edge EId.
   void TNEANetSparse2::IntAttrValueEI(const TInt& EId, TIntV& Values) const {
-
+    Values = TVec<TInt>();
+    THash<TPair<TInt, TInt>, TInt>::TIter It = IntAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
   } 
   /// Returns a vector of str attr names for node NId.
   void TNEANetSparse2::StrAttrNameEI(const TInt& EId, TStrV& Names) const {
-
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
   }
   /// Returns a vector of attr values for node NId.
   void TNEANetSparse2::StrAttrValueEI(const TInt& EId, TStrV& Values) const {
-
+    Values = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TStr>::TIter It = StrAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
   } 
   /// Returns a vector of int attr names for node NId.
   void TNEANetSparse2::FltAttrNameEI(const TInt& EId, TStrV& Names) const {
-
+    Names = TVec<TStr>();
+    THash<TPair<TInt, TInt>, TFlt>::TIter It = FltAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Names.Add(GetAttrNameE(It.GetKey().GetVal2()));
+      }
+      It++;
+    }
   }
   /// Returns a vector of attr values for node NId.
   void TNEANetSparse2::FltAttrValueEI(const TInt& EId, TFltV& Values) const {
-
+    Values = TVec<TFlt>();
+    THash<TPair<TInt, TInt>, TFlt>::TIter It = FltAttrsE.BegI();
+    while (!It.IsEnd()) {
+      if(It.GetKey().GetVal1() == EId) {
+        Values.Add(It.GetDat());
+      }
+      It++;
+    }
 
   }
     // Returns node attribute value, converted to Str type.
   TStr TNEANetSparse2::GetNodeAttrValue(const int& NId, const TStr Name) const {
+    if (isAttrN(Name, IntType)) {
+      TInt AttrId = GetAttrIdN(attr, IntType);
+      TPair<TInt, TInt> Key(NId, AttrId);
+      return IntAttrsN.GetDat(Key).GetStr();
+    }
+
+    if (isAttrN(Name, StrType)) {
+      TInt AttrId = GetAttrIdN(attr, StrType);
+      TPair<TInt, TInt> Key(NId, AttrId);
+      return StrAttrsN.GetDat(Key);
+    }
+
+    if (isAttrN(Name, FltType)) {
+      TInt AttrId = GetAttrIdN(attr, FltType);
+      TPair<TInt, TInt> Key(NId, AttrId);
+      return FltAttrsN.GetDat(Key);
+    }
 
   }
   // Returns edge attribute value, converted to Str type.
   TStr TNEANetSparse2::GetEdgeAttrValue(const int& EId, const TStr Name) const {
+    if (isAttrE(Name, IntType)) {
+      TInt AttrId = GetAttrIdE(attr, IntType);
+      TPair<TInt, TInt> Key(EId, AttrId);
+      return IntAttrsE.GetDat(Key).GetStr();
+    }
 
+    if (isAttrE(Name, StrType)) {
+      TInt AttrId = GetAttrIdE(attr, StrType);
+      TPair<TInt, TInt> Key(EId, AttrId);
+      return StrAttrsE.GetDat(Key);
+    }
+
+    if (isAttrE(Name, FltType)) {
+      TInt AttrId = GetAttrIdE(attr, FltType);
+      TPair<TInt, TInt> Key(EId, AttrId);
+      return FltAttrsE.GetDat(Key);
+    }
   }
