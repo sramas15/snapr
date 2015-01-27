@@ -13,6 +13,7 @@
 // graph data structures
 #include "graph.cpp"         // graphs
 #include "network.cpp"       // networks
+#include "sparse.cpp"
 #include "timenet.cpp"       // time evolving networks
 
 // algorithms
