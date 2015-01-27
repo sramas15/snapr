@@ -561,6 +561,17 @@ protected:
   PTable InitializeJointTable(const TTable& Table);
   /// Adds joint row T1[RowIdx1]<=>T2[RowIdx2].
   void AddJointRow(const TTable& T1, const TTable& T2, TInt RowIdx1, TInt RowIdx2);
+/***** Utility functions for Threshold Join *****/
+  void ThresholdJoinInputCorrectness(const TStr& KeyCol1, const TStr& JoinCol1, const TTable& Table, 
+    const TStr& KeyCol2, const TStr& JoinCol2);
+  void ThresholdJoinCountCollisions(const TTable& TB, const TTable& TS, 
+    const TIntIntVH& T, TInt JoinColIdxB, TInt KeyColIdxB, TInt KeyColIdxS, 
+    THash<TIntPr,TIntTr>& Counters, TBool ThisIsSmaller, TAttrType JoinColType, TAttrType KeyType);
+  PTable ThresholdJoinOutputTable(const THash<TIntPr,TIntTr>& Counters, TInt Threshold, const TTable& Table);
+  void ThresholdJoinCountPerJoinKeyCollisions(const TTable& TB, const TTable& TS, 
+    const TIntIntVH& T, TInt JoinColIdxB, TInt KeyColIdxB, TInt KeyColIdxS, 
+    THash<TIntTr,TIntTr>& Counters, TBool ThisIsSmaller, TAttrType JoinColType, TAttrType KeyType);
+  PTable ThresholdJoinPerJoinKeyOutputTable(const THash<TIntTr,TIntTr>& Counters, TInt Threshold, const TTable& Table);
 
   /// Resizes the table to hold \c RowCount rows.
   void ResizeTable(int RowCount);
@@ -933,6 +944,8 @@ public:
   PTable Join(const TStr& Col1, const PTable& Table, const TStr& Col2) { 
     return Join(Col1, *Table, Col2); 
   }
+  PTable ThresholdJoin(const TStr& KeyCol1, const TStr& JoinCol1, const TTable& Table, const TStr& KeyCol2, const TStr& JoinCol2, TInt Threshold, TBool PerJoinKey = false);
+  
   /// Joins table with itself, on values of \c Col.
   PTable SelfJoin(const TStr& Col) { return Join(Col, *this, Col); }
   PTable SelfSimJoin(const TStrV& Cols, const TStr& DistanceColName, const TSimType& SimType, const TFlt& Threshold) { return SimJoin(Cols, *this, Cols, DistanceColName, SimType, Threshold); }
