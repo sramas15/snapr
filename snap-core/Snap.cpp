@@ -14,6 +14,7 @@
 #include "graph.cpp"         // graphs
 #include "network.cpp"       // networks
 #include "sparse.cpp"
+#include "sparse2.cpp"
 #include "timenet.cpp"       // time evolving networks
 
 // algorithms

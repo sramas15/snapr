@@ -5,7 +5,7 @@ bool TNEANetSparse2::HasFlag(const TGraphFlag& Flag) const {
 }
 
 bool TNEANetSparse2::TNodeI::IsInNId(const int& NId) const {
-  const TNode& Node = NodeH.GetDat(NId);
+  const TNode& Node = Graph->NodeH.GetDat(NId);
   for (int edge = 0; edge < Node.GetInDeg(); edge++) {
     if (NId == Graph->GetEdge(Node.GetInEId(edge)).GetSrcNId())
       return true;
@@ -14,7 +14,7 @@ bool TNEANetSparse2::TNodeI::IsInNId(const int& NId) const {
 }
 
 bool TNEANetSparse2::TNodeI::IsOutNId(const int& NId) const {
-  const TNode& Node = NodeH.GetDat(NId);
+  const TNode& Node = Graph->NodeH.GetDat(NId);
   for (int edge = 0; edge < Node.GetOutDeg(); edge++) {
     if (NId == Graph->GetEdge(Node.GetOutEId(edge)).GetDstNId())
       return true;
@@ -28,57 +28,56 @@ bool TNEANetSparse2::NodeAttrIsDeleted(const int& NId, const TStr& attr) const {
 
 bool TNEANetSparse2::NodeAttrIsIntDeleted(const int& NId, const TStr& attr) const {
   int AttrId = GetAttrIdN(attr, IntType);
-  TPair<TInt, TInt> key(NId, id);
+  TPair<TInt, TInt> key(NId, AttrId);
   return IntAttrsN.IsKey(key);
 }
 
 bool TNEANetSparse2::NodeAttrIsStrDeleted(const int& NId, const TStr& attr) const {
   int AttrId = GetAttrIdN(attr, StrType);
-  TPair<TInt, TInt> key(NId, id);
+  TPair<TInt, TInt> key(NId, AttrId);
   return StrAttrsN.IsKey(key);
 }
 
 bool TNEANetSparse2::NodeAttrIsFltDeleted(const int& NId, const TStr& attr) const {
   int AttrId = GetAttrIdN(attr, FltType);
-  TPair<TInt, TInt> key(NId, id);
+  TPair<TInt, TInt> key(NId, AttrId);
   return FltAttrsN.IsKey(key);
 }
 
 bool TNEANetSparse2::EdgeAttrIsDeleted(const int& EId, const TStr& attr) const {
-  return EdgeAttrIsIntDeleted(NId, attr) && EdgeAttrIsStrDeleted(NId, attr) && EdgeAttrIsFltDeleted(NId, attr);
+  return EdgeAttrIsIntDeleted(EId, attr) && EdgeAttrIsStrDeleted(EId, attr) && EdgeAttrIsFltDeleted(EId, attr);
 }
 
 bool TNEANetSparse2::EdgeAttrIsIntDeleted(const int& EId, const TStr& attr) const {
   int AttrId = GetAttrIdE(attr, IntType);
-  TPair<TInt, TInt> key(EId, id);
+  TPair<TInt, TInt> key(EId, AttrId);
   return IntAttrsE.IsKey(key);
 }
 
 bool TNEANetSparse2::EdgeAttrIsStrDeleted(const int& EId, const TStr& attr) const {
   int AttrId = GetAttrIdE(attr, StrType);
-  TPair<TInt, TInt> key(EId, id);
+  TPair<TInt, TInt> key(EId, AttrId);
   return StrAttrsE.IsKey(key);
 }
 
 bool TNEANetSparse2::EdgeAttrIsFltDeleted(const int& EId, const TStr& attr) const {
   int AttrId = GetAttrIdE(attr, FltType);
-  TPair<TInt, TInt> key(EId, id);
+  TPair<TInt, TInt> key(EId, AttrId);
   return FltAttrsE.IsKey(key);
 }
 
 int TNEANetSparse2::AddNode(int NId) {
-  int i;
   if (NId == -1) {
     NId = MxNId;  MxNId++;
   } else {
     IAssertR(!IsNode(NId), TStr::Fmt("NodeId %d already exists", NId));
     MxNId = TMath::Mx(NId+1, MxNId());
   }
+  NodeH.AddDat(NId, TNode(NId));
   return NId;
 }
 
 void TNEANetSparse2::DelNode(const int& NId) {
-  int i;
   
   const TNode& Node = GetNode(NId);
   for (int out = 0; out < Node.GetOutDeg(); out++) {
@@ -103,7 +102,6 @@ void TNEANetSparse2::DelNode(const int& NId) {
 }
 
 int TNEANetSparse2::AddEdge(const int& SrcNId, const int& DstNId, int EId) {
-  int i;
 
   if (EId == -1) { EId = MxEId;  MxEId++; }
   else { MxEId = TMath::Mx(EId+1, MxEId()); }
@@ -116,7 +114,6 @@ int TNEANetSparse2::AddEdge(const int& SrcNId, const int& DstNId, int EId) {
 }
 
 void TNEANetSparse2::DelEdge(const int& EId) {
-  int i;
 
   IAssert(IsEdge(EId));
   const int SrcNId = GetEdge(EId).GetSrcNId();
@@ -243,7 +240,7 @@ void TNEANetSparse2::Dump(FILE *OutF) const {
   for (TNodeI NodeI = BegNI(); NodeI < EndNI(); NodeI++) {
     fprintf(OutF, "  %*d]\n", NodePlaces, NodeI.GetId());
     // load node attributes
-   /* TIntV IntAttrN;
+   TIntV IntAttrN;
     IntAttrValueNI(NodeI.GetId(), IntAttrN);
     fprintf(OutF, "    nai[%d]", IntAttrN.Len());
     for (int i = 0; i < IntAttrN.Len(); i++) {
@@ -257,7 +254,7 @@ void TNEANetSparse2::Dump(FILE *OutF) const {
     FltAttrValueNI(NodeI.GetId(), FltAttrN);
     fprintf(OutF, "    naf[%d]", FltAttrN.Len());
     for (int i = 0; i < FltAttrN.Len(); i++) {
-      fprintf(OutF, " %*f", NodePlaces, FltAttrN[i]()); }*/
+      fprintf(OutF, " %*f", NodePlaces, FltAttrN[i]()); }
 
     fprintf(OutF, "    in[%d]", NodeI.GetInDeg());
     for (int edge = 0; edge < NodeI.GetInDeg(); edge++) {
@@ -272,7 +269,7 @@ void TNEANetSparse2::Dump(FILE *OutF) const {
     fprintf(OutF, "  %*d]  %*d  ->  %*d", EdgePlaces, EdgeI.GetId(), NodePlaces, EdgeI.GetSrcNId(), NodePlaces, EdgeI.GetDstNId());
 
     // load edge attributes
-    /*TIntV IntAttrE;
+    TIntV IntAttrE;
     IntAttrValueEI(EdgeI.GetId(), IntAttrE);
     fprintf(OutF, "    eai[%d]", IntAttrE.Len());
     for (int i = 0; i < IntAttrE.Len(); i++) {
@@ -289,7 +286,7 @@ void TNEANetSparse2::Dump(FILE *OutF) const {
     fprintf(OutF, "    eaf[%d]", FltAttrE.Len());
     for (int i = 0; i < FltAttrE.Len(); i++) {
       fprintf(OutF, " %*f", EdgePlaces, FltAttrE[i]()); 
-    }*/
+    }
     fprintf(OutF, "\n");
   }
   fprintf(OutF, "\n");
@@ -298,159 +295,154 @@ void TNEANetSparse2::Dump(FILE *OutF) const {
 // Attribute related function
 
 int TNEANetSparse2::AddIntAttrDatN(const int& NId, const TInt& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
   if (!IsNode(NId)) {
     // AddNode(NId);
     return -1;
   }
-  TInt AttrId = GetAttrIdN(attr, IntType);
+  TInt AttrId = AddAttrIdN(attr, IntType);
   TPair<TInt, TInt> Key(NId, AttrId);
   IntAttrsN.AddDat(Key, value);
+  return 0;
 } 
 
 int TNEANetSparse2::AddStrAttrDatN(const int& NId, const TStr& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
   if (!IsNode(NId)) {
     // AddNode(NId);
     return -1;
   }
-  TInt AttrId = GetAttrIdN(attr, StrType);
+  TInt AttrId = AddAttrIdN(attr, StrType);
   TPair<TInt, TInt> Key(NId, AttrId);
   StrAttrsN.AddDat(Key, value);
-
+  return 0;
 } 
 
 int TNEANetSparse2::AddFltAttrDatN(const int& NId, const TFlt& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
 
   if (!IsNode(NId)) {
     // AddNode(NId);
     return -1;
   }
-  TInt AttrId = GetAttrIdN(attr, FltType);
+  TInt AttrId = AddAttrIdN(attr, FltType);
   TPair<TInt, TInt> Key(NId, AttrId);
   FltAttrsN.AddDat(Key, value);
-
+  return 0;
 } 
 
 int TNEANetSparse2::AddIntAttrDatE(const int& EId, const TInt& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
   if (!IsEdge(EId)) {
     //AddEdge(EId);
      return -1;
   }
-  TInt AttrId = Edge.GetAttrIdE(attr, IntType);
+  TInt AttrId = AddAttrIdE(attr, IntType);
   TPair<TInt, TInt> Key(EId, AttrId);
   IntAttrsE.AddDat(Key, value);
-
+  return 0;
 } 
 
 int TNEANetSparse2::AddStrAttrDatE(const int& EId, const TStr& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
   if (!IsEdge(EId)) {
     //AddEdge(EId);
      return -1;
   }
-  TInt AttrId = Edge.GetAttrIdE(attr, StrType);
+  TInt AttrId = AddAttrIdE(attr, StrType);
   TPair<TInt, TInt> Key(EId, AttrId);
   StrAttrsE.AddDat(Key, value);
-
+  return 0;
 } 
 
 int TNEANetSparse2::AddFltAttrDatE(const int& EId, const TFlt& value, const TStr& attr) {
-  int i;
   TInt CurrLen;
 
   if (!IsEdge(EId)) {
     //AddEdge(EId);
      return -1;
   }
-  TInt AttrId = Edge.GetAttrIdE(attr, FltType);
+  TInt AttrId = AddAttrIdE(attr, FltType);
   TPair<TInt, TInt> Key(EId, AttrId);
   FltAttrsE.AddDat(Key, value);
-
+  return 0;
 }
 
 TInt TNEANetSparse2::GetIntAttrDatN(const int& NId, const TStr& attr) {
   TInt AttrId = GetAttrIdN(attr, IntType);
   TPair<TInt, TInt> Key(NId, AttrId);
-  IntAttrsN.GetDat(Key);
+  return IntAttrsN.GetDat(Key);
 }
 
 TStr TNEANetSparse2::GetStrAttrDatN(const int& NId, const TStr& attr) {
   TInt AttrId = GetAttrIdN(attr, StrType);
   TPair<TInt, TInt> Key(NId, AttrId);
-  StrAttrsN.GetDat(Key);
+  return StrAttrsN.GetDat(Key);
 }
 
 TFlt TNEANetSparse2::GetFltAttrDatN(const int& NId, const TStr& attr) {
   TInt AttrId = GetAttrIdN(attr, FltType);
   TPair<TInt, TInt> Key(NId, AttrId);
-  FltAttrsN.GetDat(Key);
+  return FltAttrsN.GetDat(Key);
 }
 
 TInt TNEANetSparse2::GetIntAttrDatE(const int& EId, const TStr& attr) {
   TInt AttrId = GetAttrIdE(attr, IntType);
   TPair<TInt, TInt> Key(EId, AttrId);
-  IntAttrsE.GetDat(Key);
+  return IntAttrsE.GetDat(Key);
 }
 
 TStr TNEANetSparse2::GetStrAttrDatE(const int& EId, const TStr& attr) {
   TInt AttrId = GetAttrIdE(attr, StrType);
   TPair<TInt, TInt> Key(EId, AttrId);
-  StrAttrsE.GetDat(Key);
+  return StrAttrsE.GetDat(Key);
 }
 
 TFlt TNEANetSparse2::GetFltAttrDatE(const int& EId, const TStr& attr) {
   TInt AttrId = GetAttrIdE(attr, FltType);
   TPair<TInt, TInt> Key(EId, AttrId);
-  FltAttrsE.GetDat(Key);
+  return FltAttrsE.GetDat(Key);
 }
 
 int TNEANetSparse2::DelAttrDatN(const int& NId, const TStr& attr) {
-  TNode& Node = NodeH.GetDat(NId);
-  if (isAttrN(attr, IntType)) {
-    TPair<TInt, TInt> Key(NId, AttrId);
+  if (IsAttrN(attr, IntType)) {
+    TPair<TInt, TInt> Key(NId, GetAttrIdN(attr, IntType));
     IntAttrsN.DelKey(Key);
-    return;
+    return 0;
   }
-  if (isAttrN(attr, StrType)) {
-    TPair<TInt, TInt> Key(NId, AttrId);
+  if (IsAttrN(attr, StrType)) {
+    TPair<TInt, TInt> Key(NId, GetAttrIdN(attr, StrType));
     StrAttrsN.DelKey(Key);
-    return;
+    return 0;
   }
-  if (isAttrN(attr, FltType)) {
-    TPair<TInt, TInt> Key(NId, AttrId);
+  if (IsAttrN(attr, FltType)) {
+    TPair<TInt, TInt> Key(NId, GetAttrIdN(attr, FltType));
     FltAttrsN.DelKey(Key);
-    return;
+    return 0;
   }
+  return -1;
 }
              
 int TNEANetSparse2::DelAttrDatE(const int& EId, const TStr& attr) {
-  TEdge& Edge = EdgeH.GetDat(EId);
-  if (isAttrE(attr, IntType)) {
-    TPair<TInt, TInt> Key(EId, AttrId);
+  if (IsAttrE(attr, IntType)) {
+    TPair<TInt, TInt> Key(EId, GetAttrIdE(attr, IntType));
     IntAttrsE.DelKey(Key);
-    return;
+    return 0;
   }
-  if (isAttrE(attr, StrType)) {
-    TPair<TInt, TInt> Key(EId, AttrId);
+  if (IsAttrE(attr, StrType)) {
+    TPair<TInt, TInt> Key(EId, GetAttrIdE(attr, StrType));
     StrAttrsE.DelKey(Key);
-    return;
+    return 0;
   }
-  if (isAttrE(attr, FltType)) {
-    TPair<TInt, TInt> Key(EId, AttrId);
+  if (IsAttrE(attr, FltType)) {
+    TPair<TInt, TInt> Key(EId, GetAttrIdE(attr, FltType));
     FltAttrsE.DelKey(Key);
-    return;
+    return 0;
   }
+  return -1;
 }
 
-int TNEANetSparse2::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId=-1) {
+int TNEANetSparse2::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId) const {
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   FltAttrs = TVec<TFlt>();
   TInt AttrId = GetAttrIdE(attr, FltType);
@@ -461,18 +453,13 @@ int TNEANetSparse2::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int E
   }
   /*
   StrIntPrH::TIter NodeHI, TStrV& Names) const {
-  Names = TVec<TStr>();
   while (!NodeHI.IsEnd()) {
-    if (!NodeAttrIsDeleted(NId, NodeHI)) {
-      Names.Add(NodeHI.GetKey());
-    }
-    NodeHI++;
-  } 
-  */
+  } */
+  return 0;
 }
 
   // Get Vector for the Int Attribute attr.
-int TNEANetSparse2::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId=-1) { 
+int TNEANetSparse2::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId) const{ 
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   IntAttrs = TVec<TInt>();
   TInt AttrId = GetAttrIdE(attr, IntType);
@@ -481,10 +468,11 @@ int TNEANetSparse2::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int E
     IntAttrs.Add(IntAttrsE.GetDat(Key));
     EdgeHI++;
   }
+  return 0;
 }
 
   // Get Vector for the Str Attribute attr.
-int TNEANetSparse2::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId=-1) {
+int TNEANetSparse2::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId) const{
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   StrAttrs = TVec<TStr>();
   TInt AttrId = GetAttrIdE(attr, StrType);
@@ -493,10 +481,11 @@ int TNEANetSparse2::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int E
     StrAttrs.Add(StrAttrsE.GetDat(Key));
     EdgeHI++;
   }
+  return 0;
 }
 
     // Get Vector for the Flt Attribute attr.
-int TNEANetSparse2::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId=-1) {
+int TNEANetSparse2::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId) const{
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   FltAttrs = TVec<TFlt>();
   TInt AttrId = GetAttrIdN(attr, FltType);
@@ -505,10 +494,11 @@ int TNEANetSparse2::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int N
     FltAttrs.Add(FltAttrsN.GetDat(Key));
     NodeHI++;
   }
+  return 0;
 }
 
   // Get Vector for the Int Attribute attr.
-int TNEANetSparse2::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId=-1) {
+int TNEANetSparse2::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId) const {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   IntAttrs = TVec<TInt>();
   TInt AttrId = GetAttrIdN(attr, IntType);
@@ -517,10 +507,11 @@ int TNEANetSparse2::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int N
     IntAttrs.Add(IntAttrsN.GetDat(Key));
     NodeHI++;
   }
+  return 0;
 }
 
   // Get Vector for the Str Attribute attr.
-int TNEANetSparse2::GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1) {
+int TNEANetSparse2::GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId) const {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   StrAttrs = TVec<TStr>();
   TInt AttrId = GetAttrIdN(attr, StrType);
@@ -529,6 +520,7 @@ int TNEANetSparse2::GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int N
     StrAttrs.Add(StrAttrsN.GetDat(Key));
     NodeHI++;
   }
+  return 0;
 }
 
 // Return a small graph on 5 nodes and 6 edges.
@@ -541,7 +533,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
   return Net;
 }
 
- /// Returns a vector of int attr names for node NId.
+/* /// Returns a vector of int attr names for node NId.
   void TNEANetSparse2::IntAttrNI(const TInt& NId) const {
     TIntV AttrIds = TVec<TInt>();
     TIntV Attrs = TVec<TInt>();
@@ -625,7 +617,7 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
       It++;
     }
     return TAVFltI(AttrIds, Attrs, true, Graph);
-  }
+  }*/
 
     /// Returns a vector of attr names for node NId.
   void TNEANetSparse2::AttrNameNI(const TInt& NId, TStrV& Names) const {
@@ -896,43 +888,44 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
 
   }
     // Returns node attribute value, converted to Str type.
-  TStr TNEANetSparse2::GetNodeAttrValue(const int& NId, const TStr Name) const {
-    if (isAttrN(Name, IntType)) {
+  TStr TNEANetSparse2::GetNodeAttrValue(const int& NId, const TStr attr) const {
+    if (IsAttrN(attr, IntType)) {
       TInt AttrId = GetAttrIdN(attr, IntType);
       TPair<TInt, TInt> Key(NId, AttrId);
       return IntAttrsN.GetDat(Key).GetStr();
     }
 
-    if (isAttrN(Name, StrType)) {
+    if (IsAttrN(attr, StrType)) {
       TInt AttrId = GetAttrIdN(attr, StrType);
       TPair<TInt, TInt> Key(NId, AttrId);
       return StrAttrsN.GetDat(Key);
     }
 
-    if (isAttrN(Name, FltType)) {
+    if (IsAttrN(attr, FltType)) {
       TInt AttrId = GetAttrIdN(attr, FltType);
       TPair<TInt, TInt> Key(NId, AttrId);
-      return FltAttrsN.GetDat(Key);
+      return FltAttrsN.GetDat(Key).GetStr();
     }
-
+    return TStr::GetNullStr();
   }
   // Returns edge attribute value, converted to Str type.
-  TStr TNEANetSparse2::GetEdgeAttrValue(const int& EId, const TStr Name) const {
-    if (isAttrE(Name, IntType)) {
+  TStr TNEANetSparse2::GetEdgeAttrValue(const int& EId, const TStr attr) const {
+    if (IsAttrE(attr, IntType)) {
       TInt AttrId = GetAttrIdE(attr, IntType);
       TPair<TInt, TInt> Key(EId, AttrId);
       return IntAttrsE.GetDat(Key).GetStr();
     }
 
-    if (isAttrE(Name, StrType)) {
+    if (IsAttrE(attr, StrType)) {
       TInt AttrId = GetAttrIdE(attr, StrType);
       TPair<TInt, TInt> Key(EId, AttrId);
       return StrAttrsE.GetDat(Key);
     }
 
-    if (isAttrE(Name, FltType)) {
+    if (IsAttrE(attr, FltType)) {
       TInt AttrId = GetAttrIdE(attr, FltType);
       TPair<TInt, TInt> Key(EId, AttrId);
-      return FltAttrsE.GetDat(Key);
+      return FltAttrsE.GetDat(Key).GetStr();
     }
+    return TStr::GetNullStr();
   }

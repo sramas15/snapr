@@ -18,6 +18,7 @@
 #include "bignet.h"          // large networks
 #include "timenet.h"         // time evolving networks
 #include "sparse.h"
+#include "sparse2.h"
 
 // algorithms
 #include "subgraph.h"        // subgraph manipulations

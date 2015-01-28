@@ -95,11 +95,11 @@ public:
     /// Tests whether the edge with ID EId is an in or out-edge of current node.
     bool IsNbrEId(const int& EId) const { return IsInEId(EId) || IsOutEId(EId); }
     /// Gets vector of int attribute names.
-    TAVIntI GetIntAttrNames() const { return Graph->IntAttrNI(GetId()); }
+    //TAVIntI GetIntAttrNames() const { return Graph->IntAttrNI(GetId()); }
     /// Gets vector of str attribute names.
-    TAVStrI GetStrAttrNames() const { return Graph->StrAttrNI(GetId()); }
+    //TAVStrI GetStrAttrNames() const { return Graph->StrAttrNI(GetId()); }
     /// Gets vector of flt attribute names.
-    TAVFltI GetFltAttrNames() const { return Graph->FltAttrNI(GetId()); }
+    //TAVFltI GetFltAttrNames() const { return Graph->FltAttrNI(GetId()); }
     /// Gets vector of attribute names.
     void GetAttrNames(TStrV& Names) const { Graph->AttrNameNI(GetId(), Names); }
     /// Gets vector of attribute values.
@@ -140,11 +140,11 @@ public:
     /// Returns the destination of the edge.
     int GetDstNId() const { return EdgeHI.GetDat().GetDstNId(); }
     /// Gets vector of int attribute names.
-    TAVIntI GetIntAttrs() const { return Graph->IntAttrEI(GetId()); }
+    //TAVIntI GetIntAttrs() const { return Graph->IntAttrEI(GetId()); }
     /// Gets vector of str attribute names.
-    TAVStrI GetStrAttrs() const { return Graph->StrAttrEI(GetId()); }
+    //TAVStrI GetStrAttrs() const { return Graph->StrAttrEI(GetId()); }
     /// Gets vector of flt attribute names.
-    TAVFltI GetFltAttrs() const { return Graph->FltAttrEI(GetId()); }
+    //TAVFltI GetFltAttrs() const { return Graph->FltAttrEI(GetId()); }
     /// Gets vector of attribute names.
     void GetAttrNames(TStrV& Names) const { Graph->AttrNameEI(GetId(), Names); }
     /// Gets vector of attribute values.
@@ -190,18 +190,18 @@ public:
   class TAVIntI {
   private:
     typedef TIntV::TIter TIntVecIter;
-    TIntVecIter HI;
     TIntVecIter NI;
+    TIntVecIter HI;
     bool isNode;
     const TNEANetSparse2 *Graph;
   public:
-    TAVIntI() : HI(), NI(), GRAPH(NULL) { }
+    TAVIntI() : NI(), HI(), Graph(NULL) { }
     TAVIntI(const TIntVecIter& NIter, const TIntVecIter& HIter, bool isEdgeIter, const TNEANetSparse2* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVIntI(const TAVIntI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
-    TAVIntI& operator = (const TAVInt& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; }
+    TAVIntI& operator = (const TAVIntI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this; }
     bool operator < (const TAVIntI& I) const { return HI < I.HI; }
     bool operator == (const TAVIntI& I) const { return HI == I.HI; }
-    TStr GetName() { return isNode ? Graph.GetAttrNameN(NI[0]) : Graph.GetAttrNameE(NI[0]); }
+    TStr GetName() { return isNode ? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TInt GetDat() const { return HI[0]; }
     TAVIntI& operator++(int) { HI++; NI++; return *this; }
     friend class TNEANetSparse2;
@@ -234,18 +234,18 @@ public:
   private:
     typedef TIntV::TIter TIntVecIter;
     typedef TStrV::TIter TStrVecIter;
-    TStrVecIter HI;
     TIntVecIter NI;
+    TStrVecIter HI;
     bool isNode;
     const TNEANetSparse2 *Graph;
   public:
-    TAVStrI() : HI(), NI(), GRAPH(NULL) { }
+    TAVStrI() : NI(), HI(), Graph(NULL) { }
     TAVStrI(const TIntVecIter& NIter, const TStrVecIter& HIter, bool isEdgeIter, const TNEANetSparse2* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVStrI(const TAVStrI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
-    TAVStrI& operator = (const TAVStr& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; }
+    TAVStrI& operator = (const TAVStrI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this; }
     bool operator < (const TAVStrI& I) const { return HI < I.HI; }
     bool operator == (const TAVStrI& I) const { return HI == I.HI; }
-    TStr GetName() { return isNode ? Graph.GetAttrNameN(NI[0]) : Graph.GetAttrNameE(NI[0]); }
+    TStr GetName() { return isNode ? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TStr GetDat() const { return HI[0]; }
     TAVStrI& operator++(int) { HI++; NI++; return *this; }
     friend class TNEANetSparse2;
@@ -278,18 +278,18 @@ public:
   private:
     typedef TIntV::TIter TIntVecIter;
     typedef TFltV::TIter TFltVecIter;
-    TFltVecIter HI;
     TIntVecIter NI;
+    TFltVecIter HI;
     bool isNode;
     const TNEANetSparse2 *Graph;
   public:
-    TAVFltI() : HI(), NI(), GRAPH(NULL) { }
+    TAVFltI() : NI(), HI(), Graph(NULL) { }
     TAVFltI(const TIntVecIter& NIter, const TFltVecIter& HIter, bool isEdgeIter, const TNEANetSparse2* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVFltI(const TAVFltI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
-    TAVFltI& operator = (const TAVFlt& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; }
+    TAVFltI& operator = (const TAVFltI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this; }
     bool operator < (const TAVFltI& I) const { return HI < I.HI; }
     bool operator == (const TAVFltI& I) const { return HI == I.HI; }
-    TStr GetName() { return isNode ? Graph.GetAttrNameN(NI[0]) : Graph.GetAttrNameE(NI[0]); }
+    TStr GetName() { return isNode ? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TFlt GetDat() const { return HI[0]; }
     TAVFltI& operator++(int) { HI++; NI++; return *this; }
     friend class TNEANetSparse2;
@@ -316,7 +316,12 @@ private:
 
   TInt GetAttrIdE(const TStr& attribute, const TInt& type) const { 
     TPair<TStr, TInt> key(attribute, type);
-    if (AttrToIdE.IsKey(key)) { AttrToIdE.AddKey(key); } 
+    if (!AttrToIdE.IsKey(key)) { return TInt(-1); } 
+    return AttrToIdE.GetKeyId(key); 
+  }
+  TInt AddAttrIdE(const TStr& attribute, const TInt& type) {
+    TPair<TStr, TInt> key(attribute, type);
+    if (!AttrToIdE.IsKey(key)) { AttrToIdE.AddKey(key); } 
     return AttrToIdE.GetKeyId(key); 
   }
   bool IsAttrE(const TStr& attribute, const TInt& type) const { 
@@ -328,7 +333,12 @@ private:
 
   TInt GetAttrIdN(const TStr& attribute, const TInt& type) const { 
     TPair<TStr, TInt> key(attribute, type); 
-    if (AttrToIdN.IsKey(key)) { AttrToIdN.AddKey(key); } 
+    if (!AttrToIdN.IsKey(key)) { return TInt(-1); } 
+    return AttrToIdN.GetKeyId(key);
+  }
+  TInt AddAttrIdN(const TStr& attribute, const TInt& type) { 
+    TPair<TStr, TInt> key(attribute, type); 
+    if (!AttrToIdN.IsKey(key)) { AttrToIdN.AddKey(key); } 
     return AttrToIdN.GetKeyId(key);
   }
   bool IsAttrN(const TStr& attribute, const TInt& type) const { 
@@ -344,7 +354,6 @@ private:
   THash<TInt, TNode> NodeH;
   THash<TInt, TEdge> EdgeH;
   /// KeyToIndexType[N|E]: Key->(Type,Index).
-  TStrIntPrH KeyToIndexTypeN, KeyToIndexTypeE;
 
   //THash<TStr, TInt> IntDefaultsN, IntDefaultsE;
   //THash<TStr, TStr> StrDefaultsN, StrDefaultsE;
@@ -361,33 +370,30 @@ private:
   THash<TPair<TInt, TInt>, TFlt> FltAttrsE;
   THash<TPair<TInt, TInt>, TStr> StrAttrsE;
 
-  // REMOVE THESE
-  // REMOVE THESE
-
   enum { IntType, StrType, FltType };
 public:
 
   //UPDATE !!!!!!!!!!!
   TNEANetSparse2() : CRef(), MxNId(0), MxEId(0), NodeH(), EdgeH(),
-    KeyToIndexTypeN(), KeyToIndexTypeE(), AttrToIdE(), AttrToIdN(), IntAttrsN(), FltAttrsN(), StrAttrsN(),
+    AttrToIdE(), AttrToIdN(), IntAttrsN(), FltAttrsN(), StrAttrsN(),
     IntAttrsE(), FltAttrsE(), StrAttrsE() { }
   /// Constructor that reserves enough memory for a graph of nodes and edges.
   explicit TNEANetSparse2(const int& Nodes, const int& Edges) : CRef(),
-    MxNId(0), MxEId(0), NodeH(), EdgeH(), KeyToIndexTypeN(), KeyToIndexTypeE(), AttrToIdE(), AttrToIdN(),
+    MxNId(0), MxEId(0), NodeH(), EdgeH(), AttrToIdE(), AttrToIdN(),
     IntAttrsN(), FltAttrsN(), StrAttrsN(), IntAttrsE(), FltAttrsE(), StrAttrsE()
     { Reserve(Nodes, Edges); }
   TNEANetSparse2(const TNEANetSparse2& Graph) : MxNId(Graph.MxNId), MxEId(Graph.MxEId),
-    NodeH(Graph.NodeH), EdgeH(Graph.EdgeH), KeyToIndexTypeN(), KeyToIndexTypeE(), AttrToIdE(Graph.AttrToIdE), AttrToIdN(Graph.AttrToIdN),
+    NodeH(Graph.NodeH), EdgeH(Graph.EdgeH), AttrToIdE(Graph.AttrToIdE), AttrToIdN(Graph.AttrToIdN),
     IntAttrsN(Graph.IntAttrsN), FltAttrsN(Graph.FltAttrsN), StrAttrsN(Graph.StrAttrsN),
     IntAttrsE(Graph.IntAttrsE), FltAttrsE(Graph.FltAttrsE), StrAttrsE(Graph.StrAttrsE) { }
   /// Constructor for loading the graph from a (binary) stream SIn.
   TNEANetSparse2(TSIn& SIn) : MxNId(SIn), MxEId(SIn), NodeH(SIn), EdgeH(SIn),
-    KeyToIndexTypeN(SIn), KeyToIndexTypeE(SIn), AttrToIdE(SIn), AttrToIdN(SIn),
+    AttrToIdE(SIn), AttrToIdN(SIn),
     IntAttrsN(SIn), FltAttrsN(SIn), StrAttrsN(SIn), IntAttrsE(SIn), FltAttrsE(SIn), StrAttrsE(SIn) { }
   /// Saves the graph to a (binary) stream SOut.
   void Save(TSOut& SOut) const {
     MxNId.Save(SOut); MxEId.Save(SOut); NodeH.Save(SOut); EdgeH.Save(SOut);
-    KeyToIndexTypeN.Save(SOut); KeyToIndexTypeE.Save(SOut); AttrToIdE.Save(SOut); AttrToIdN.Save(SOut);
+    AttrToIdE.Save(SOut); AttrToIdN.Save(SOut);
     IntAttrsN.Save(SOut); FltAttrsN.Save(SOut); StrAttrsN.Save(SOut); IntAttrsE.Save(SOut); FltAttrsE.Save(SOut); StrAttrsE.Save(SOut);}
 
 
@@ -424,7 +430,7 @@ public:
   TNodeI GetNI(const int& NId) const { return TNodeI(NodeH.GetI(NId), this); }
 
   /// Returns an iterator referring to the first node's int attribute.
-  TAIntI BegNAIntI(const TStr& attr) const {
+  TAIntI BegNAIntI(const TStr& attr) {
     TIntV vec;
     GetIntAttrVecN(attr, vec);
     return TAIntI(vec.BegI(), attr, false, this);
@@ -479,22 +485,20 @@ public:
     /* return TAFltI(VecOfFltVecsN[KeyToIndexTypeN.GetDat(attr).Val2].GetI(NodeH.GetKeyId(NId)), attr, false, this);*/ }
 
 
-  // FIX THESE!!!!!!!!!!!
-
-  /// Returns a vector of int attr names for node NId.
-  void IntAttrNI(const TInt& NId) const { const TNode& Node = NodeHI.GetDat(NId); return TAVIntI(Node.IntAttrIds, Node.IntAttrs, false, Graph); }
+ /* /// Returns a vector of int attr names for node NId.
+  void IntAttrNI(const TInt& NId) const { const TNode& Node = NodeH.GetDat(NId); return TAVIntI(Node.IntAttrIds.BegI(), Node.IntAttrs.BegI(), false, Graph); }
   /// Returns a vector of str attr names for node NId.
-  void StrAttrNI(const TInt& NId) const { const TNode& Node = NodeHI.GetDat(NId); return TAVStrI(Node.StrAttrIds, Node.StrAttrs, false, Graph); }
+  void StrAttrNI(const TInt& NId) const { const TNode& Node = NodeH.GetDat(NId); return TAVStrI(Node.StrAttrIds.BegI(), Node.StrAttrs.BegI(), false, Graph); }
   /// Returns a vector of int attr names for node NId.
-  void FltAttrNI(const TInt& NId) const { const TNode& Node = NodeHI.GetDat(NId); return TAVFltI(Node.FltAttrIds, Node.FltAttrs, false, Graph); }
+  void FltAttrNI(const TInt& NId) const { const TNode& Node = NodeH.GetDat(NId); return TAVFltI(Node.FltAttrIds.BegI(), Node.FltAttrs.BegI(), false, Graph); }
 
   /// Returns a vector of int attr names for edge EId.
-  void IntAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeHI.GetDat(EI); return TAVIntI(Edge.IntAttrIds, Edge.IntAttrs, true, Graph); }
+  void IntAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeH.GetDat(EI); return TAVIntI(Edge.IntAttrIds.BegI(), Edge.IntAttrs.BegI(), true, Graph); }
   /// Returns a vector of str attr names for node NId.
-  void StrAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeHI.GetDat(EI); return TAVStrI(Edge.StrAttrIds, Edge.StrAttrs, true, Graph); }
+  void StrAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeH.GetDat(EI); return TAVStrI(Edge.StrAttrIds, Edge.StrAttrs, true, Graph); }
   /// Returns a vector of int attr names for node NId.
-  void FltAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeHI.GetDat(EI); return TAVFltI(Edge.FltAttrIds, Edge.FltAttrs, true, Graph); }
-
+  void FltAttrEI(const TInt& EId) const { const TEdge& Edge = EdgeH.GetDat(EI); return TAVFltI(Edge.FltAttrIds, Edge.FltAttrs, true, Graph); }
+*/
 
 
 
@@ -643,10 +647,9 @@ public:
   bool Empty() const { return GetNodes()==0; }
 
 
-  //UPDATE !!!!!!!!!!!!!!!!
   /// Deletes all nodes and edges from the graph.
   void Clr() { MxNId=0; MxEId=0; NodeH.Clr(); EdgeH.Clr(),
-    KeyToIndexTypeN.Clr(), KeyToIndexTypeE.Clr(); AttrToIdE.Clr(); AttrToIdN.Clr();
+    AttrToIdE.Clr(); AttrToIdN.Clr();
     IntAttrsN.Clr(); FltAttrsN.Clr(); StrAttrsN.Clr(); IntAttrsE.Clr(); FltAttrsE.Clr(); StrAttrsE.Clr();}
 
 
@@ -729,22 +732,22 @@ public:
   bool EdgeAttrIsFltDeleted(const int& EId, const TStr& attr) const;
 
   // Get Vector for the Flt Attribute attr.
-  int GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId=-1);
+  int GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId=-1) const;
 
   // Get Vector for the Int Attribute attr.
-  int GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId=-1);
+  int GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId=-1) const;
 
   // Get Vector for the Str Attribute attr.
-  int GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId=-1);
+  int GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId=-1) const;
 
     // Get Vector for the Flt Attribute attr.
-  int GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId=-1);
+  int GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId=-1) const;
 
   // Get Vector for the Int Attribute attr.
-  int GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId=-1);
+  int GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId=-1) const;
 
   // Get Vector for the Str Attribute attr.
-  int GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1);
+  int GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1) const;
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();
