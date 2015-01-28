@@ -73,6 +73,7 @@ int TNEANetSparse1::AddNode(int NId) {
     IAssertR(!IsNode(NId), TStr::Fmt("NodeId %d already exists", NId));
     MxNId = TMath::Mx(NId+1, MxNId());
   }
+  NodeH.AddDat(NId, TNode(NId));
   return NId;
 }
 
