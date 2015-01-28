@@ -430,12 +430,12 @@ int TNEANetSparse1::DelAttrDatE(const int& EId, const TStr& attr) {
   return -1;
 }
 
-int TNEANetSparse1::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId) {
+int TNEANetSparse1::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int EId) const {
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   FltAttrs = TVec<TFlt>();
   TInt AttrId = GetAttrIdE(attr, FltType);
   while (!EdgeHI.IsEnd()) {
-    TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
+    const TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
     FltAttrs.Add(Edge.GetFltAttr(AttrId));
     EdgeHI++;
   }
@@ -453,12 +453,12 @@ int TNEANetSparse1::GetFltAttrVecE(const TStr& attr, TVec<TFlt>& FltAttrs, int E
 }
 
   // Get Vector for the Int Attribute attr.
-int TNEANetSparse1::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId) { 
+int TNEANetSparse1::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int EId) const { 
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   IntAttrs = TVec<TInt>();
   TInt AttrId = GetAttrIdE(attr, IntType);
   while (!EdgeHI.IsEnd()) {
-    TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
+    const TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
     IntAttrs.Add(Edge.GetIntAttr(AttrId));
     EdgeHI++;
   }
@@ -466,12 +466,12 @@ int TNEANetSparse1::GetIntAttrVecE(const TStr& attr, TVec<TInt>& IntAttrs, int E
 }
 
   // Get Vector for the Str Attribute attr.
-int TNEANetSparse1::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId) {
+int TNEANetSparse1::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int EId) const {
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
   StrAttrs = TVec<TStr>();
   TInt AttrId = GetAttrIdE(attr, StrType);
   while (!EdgeHI.IsEnd()) {
-    TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
+    const TEdge& Edge = EdgeH.GetDat(EdgeHI.GetDat().GetId());
     StrAttrs.Add(Edge.GetStrAttr(AttrId));
     EdgeHI++;
   }
@@ -479,12 +479,12 @@ int TNEANetSparse1::GetStrAttrVecE(const TStr& attr, TVec<TStr>& StrAttrs, int E
 }
 
     // Get Vector for the Flt Attribute attr.
-int TNEANetSparse1::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId) {
+int TNEANetSparse1::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int NId) const {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   FltAttrs = TVec<TFlt>();
   TInt AttrId = GetAttrIdN(attr, FltType);
   while (!NodeHI.IsEnd()) {
-    TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
+    const TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
     FltAttrs.Add(Node.GetFltAttr(AttrId));
     NodeHI++;
   }
@@ -492,12 +492,12 @@ int TNEANetSparse1::GetFltAttrVecN(const TStr& attr, TVec<TFlt>& FltAttrs, int N
 }
 
   // Get Vector for the Int Attribute attr.
-int TNEANetSparse1::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId) {
+int TNEANetSparse1::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int NId) const {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   IntAttrs = TVec<TInt>();
   TInt AttrId = GetAttrIdN(attr, IntType);
   while (!NodeHI.IsEnd()) {
-    TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
+    const TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
     IntAttrs.Add(Node.GetIntAttr(AttrId));
     NodeHI++;
   }
@@ -505,12 +505,12 @@ int TNEANetSparse1::GetIntAttrVecN(const TStr& attr, TVec<TInt>& IntAttrs, int N
 }
 
   // Get Vector for the Str Attribute attr.
-int TNEANetSparse1::GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId) {
+int TNEANetSparse1::GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId) const {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   StrAttrs = TVec<TStr>();
   TInt AttrId = GetAttrIdN(attr, StrType);
   while (!NodeHI.IsEnd()) {
-    TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
+    const TNode& Node = NodeH.GetDat(NodeHI.GetDat().GetId());
     StrAttrs.Add(Node.GetStrAttr(AttrId));
     NodeHI++;
   }
