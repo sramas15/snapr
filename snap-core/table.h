@@ -279,6 +279,10 @@ namespace TSnap{
 	/// Converts table to a network. Suitable for PNEANet - Requires node and edge attribute column names as vectors.
 	template<class PGraph> PGraph ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, 
 			TStrV& SrcAttrs, TStrV& DstAttrs, TStrV& EdgeAttrs, TAttrAggr AggrPolicy);
+  // Reads attributes from the table and adds them to Graph; Graph should be a network.
+  template<class PGraph> 
+  void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
+  TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy);
 	/// Converts table to a network. Suitable for PNEANet - Assumes no node and edge attributes. 
 	template<class PGraph> PGraph ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, TAttrAggr AggrPolicy);
   #ifdef _OPENMP
@@ -299,6 +303,8 @@ public:
   template<class PGraph> friend PGraph TSnap::ToGraph(PTable Table, const TStr& SrcCol, const TStr& DstCol, TAttrAggr AggrPolicy);
 	template<class PGraph> friend PGraph TSnap::ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, 
 			TStrV& SrcAttrs, TStrV& DstAttrs, TStrV& EdgeAttrs, TAttrAggr AggrPolicy);
+  template<class PGraph> friend void TSnap::AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
+      TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy)
   #ifdef _OPENMP
   template<class PGraphMP> friend PGraphMP TSnap::ToGraphMP(PTable Table, const TStr& SrcCol, const TStr& DstCol);
   template<class PGraphMP> friend PGraphMP TSnap::ToGraphMP2(PTable Table, const TStr& SrcCol, const TStr& DstCol);
