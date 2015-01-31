@@ -1,13 +1,13 @@
-class TNEANetSparse1;
-/// Pointer to a directed attribute multigraph (TNEANetSparse1)
-typedef TPt<TNEANetSparse1> PNEANetSparse1;
+class TNSparseNet;
+/// Pointer to a directed attribute multigraph (TNSparseNet)
+typedef TPt<TNSparseNet> PNSparseNet;
 
 //#//////////////////////////////////////////////
-/// Directed multigraph with node edge attributes. ##TNEANetSparse1::Class
-class TNEANetSparse1 {
+/// Directed multigraph with node edge attributes. ##TNSparseNet::Class
+class TNSparseNet {
 public:
-  typedef TNEANetSparse1 TNet;
-  typedef TPt<TNEANetSparse1> PNet;
+  typedef TNSparseNet TNet;
+  typedef TPt<TNSparseNet> PNet;
 public:
   class TNode {
   private:
@@ -91,7 +91,7 @@ public:
       return true;
     }
 
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
   class TEdge {
   private:
@@ -168,17 +168,17 @@ public:
       return true;
     }
 
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
   /// Node iterator. Only forward iteration (operator++) is supported.
   class TNodeI {
   private:
     typedef THash<TInt, TNode>::TIter THashIter;
     THashIter NodeHI;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TNodeI() : NodeHI(), Graph(NULL) { }
-    TNodeI(const THashIter& NodeHIter, const TNEANetSparse1* GraphPt) : NodeHI(NodeHIter), Graph(GraphPt) { }
+    TNodeI(const THashIter& NodeHIter, const TNSparseNet* GraphPt) : NodeHI(NodeHIter), Graph(GraphPt) { }
     TNodeI(const TNodeI& NodeI) : NodeHI(NodeI.NodeHI), Graph(NodeI.Graph) { }
     TNodeI& operator = (const TNodeI& NodeI) { NodeHI = NodeI.NodeHI; Graph=NodeI.Graph; return *this; }
     /// Increment iterator.
@@ -193,11 +193,11 @@ public:
     int GetInDeg() const { return NodeHI.GetDat().GetInDeg(); }
     /// Returns out-degree of the current node.
     int GetOutDeg() const { return NodeHI.GetDat().GetOutDeg(); }
-    /// Returns ID of EdgeN-th in-node (the node pointing to the current node). ##TNEANetSparse1::TNodeI::GetInNId
+    /// Returns ID of EdgeN-th in-node (the node pointing to the current node). ##TNSparseNet::TNodeI::GetInNId
     int GetInNId(const int& EdgeN) const { return Graph->GetEdge(NodeHI.GetDat().GetInEId(EdgeN)).GetSrcNId(); }
-    /// Returns ID of EdgeN-th out-node (the node the current node points to). ##TNEANetSparse1::TNodeI::GetOutNId
+    /// Returns ID of EdgeN-th out-node (the node the current node points to). ##TNSparseNet::TNodeI::GetOutNId
     int GetOutNId(const int& EdgeN) const { return Graph->GetEdge(NodeHI.GetDat().GetOutEId(EdgeN)).GetDstNId(); }
-    /// Returns ID of EdgeN-th neighboring node. ##TNEANetSparse1::TNodeI::GetNbrNId
+    /// Returns ID of EdgeN-th neighboring node. ##TNSparseNet::TNodeI::GetNbrNId
     int GetNbrNId(const int& EdgeN) const { const TEdge& E = Graph->GetEdge(NodeHI.GetDat().GetNbrEId(EdgeN)); return GetId()==E.GetSrcNId() ? E.GetDstNId():E.GetSrcNId(); }
     /// Tests whether node with ID NId points to the current node.
     bool IsInNId(const int& NId) const;
@@ -240,17 +240,17 @@ public:
     void GetFltAttrNames(TStrV& Names) const { Graph->FltAttrNameNI(GetId(), Names); }
     /// Gets vector of flt attribute values.
     void GetFltAttrVal(TFltV& Val) const { Graph->FltAttrValueNI(GetId(), Val); }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
   /// Edge iterator. Only forward iteration (operator++) is supported.
   class TEdgeI {
   private:
     typedef THash<TInt, TEdge>::TIter THashIter;
     THashIter EdgeHI;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TEdgeI() : EdgeHI(), Graph(NULL) { }
-    TEdgeI(const THashIter& EdgeHIter, const TNEANetSparse1 *GraphPt) : EdgeHI(EdgeHIter), Graph(GraphPt) { }
+    TEdgeI(const THashIter& EdgeHIter, const TNSparseNet *GraphPt) : EdgeHI(EdgeHIter), Graph(GraphPt) { }
     TEdgeI(const TEdgeI& EdgeI) : EdgeHI(EdgeI.EdgeHI), Graph(EdgeI.Graph) { }
     TEdgeI& operator = (const TEdgeI& EdgeI) { if (this!=&EdgeI) { EdgeHI=EdgeI.EdgeHI; Graph=EdgeI.Graph; }  return *this; }
     /// Increment iterator.
@@ -285,7 +285,7 @@ public:
     void GetFltAttrNames(TStrV& Names) const { Graph->FltAttrNameEI(GetId(), Names); }
     /// Gets vector of flt attribute values.
     void GetFltAttrVal(TFltV& Val) const { Graph->FltAttrValueEI(GetId(), Val); }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   /// Node/edge integer attribute iterator. Iterates through all nodes/edges for one integer attribute.
@@ -295,10 +295,10 @@ public:
     TIntVecIter HI;
     bool isNode;
     TStr attr;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAIntI() : HI(), attr(), Graph(NULL) { }
-    TAIntI(const TIntVecIter& HIter, TStr attribute, bool isEdgeIter, const TNEANetSparse1* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
+    TAIntI(const TIntVecIter& HIter, TStr attribute, bool isEdgeIter, const TNSparseNet* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
     TAIntI(const TAIntI& I) : HI(I.HI), attr(I.attr), Graph(I.Graph) { isNode = I.isNode; }
     TAIntI& operator = (const TAIntI& I) { HI = I.HI; Graph=I.Graph; isNode = I.isNode; attr = I.attr; return *this; }
     bool operator < (const TAIntI& I) const { return HI < I.HI; }
@@ -308,7 +308,7 @@ public:
     /// Returns true if the attribute has been deleted.
     bool IsDeleted(TInt defaultValueN=TInt::Mn, TInt defaultValueE=TInt::Mn) const { return isNode ? GetDat() == defaultValueN : GetDat() == defaultValueE; };
     TAIntI& operator++(int) { HI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   class TAVIntI {
@@ -317,10 +317,10 @@ public:
     TIntVecIter NI;
     TIntVecIter HI;
     bool isNode;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAVIntI() : NI(), HI(), Graph(NULL) { }
-    TAVIntI(const TIntVecIter& NIter, const TIntVecIter& HIter, bool isEdgeIter, const TNEANetSparse1* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
+    TAVIntI(const TIntVecIter& NIter, const TIntVecIter& HIter, bool isEdgeIter, const TNSparseNet* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVIntI(const TAVIntI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
     TAVIntI& operator = (const TAVIntI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this;}
     bool operator < (const TAVIntI& I) const { return HI < I.HI; }
@@ -328,7 +328,7 @@ public:
     TStr GetName() { return isNode ? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TInt GetDat() const { return HI[0]; }
     TAVIntI& operator++(int) { HI++; NI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   /// Node/edge string attribute iterator. Iterates through all nodes/edges for one string attribute.
@@ -338,10 +338,10 @@ public:
     TStrVecIter HI;
     bool isNode;
     TStr attr;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAStrI() : HI(), attr(), Graph(NULL) { }
-    TAStrI(const TStrVecIter& HIter, TStr attribute, bool isEdgeIter, const TNEANetSparse1* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
+    TAStrI(const TStrVecIter& HIter, TStr attribute, bool isEdgeIter, const TNSparseNet* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
     TAStrI(const TAStrI& I) : HI(I.HI), attr(I.attr), Graph(I.Graph) { isNode = I.isNode; }
     TAStrI& operator = (const TAStrI& I) { HI = I.HI; Graph=I.Graph; isNode = I.isNode; attr = I.attr; return *this; }
     bool operator < (const TAStrI& I) const { return HI < I.HI; }
@@ -351,7 +351,7 @@ public:
     /// Returns true if the attribute has been deleted.
     bool IsDeleted(TStr defaultValueN=TStr::GetNullStr(), TStr defaultValueE=TStr::GetNullStr()) const { return isNode ? GetDat() == defaultValueN : GetDat() == defaultValueE; };
     TAStrI& operator++(int) { HI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   class TAVStrI {
@@ -361,10 +361,10 @@ public:
     TIntVecIter NI;
     TStrVecIter HI;
     bool isNode;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAVStrI() : NI(), HI(), Graph(NULL) { }
-    TAVStrI(const TIntVecIter& NIter, const TStrVecIter& HIter, bool isEdgeIter, const TNEANetSparse1* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
+    TAVStrI(const TIntVecIter& NIter, const TStrVecIter& HIter, bool isEdgeIter, const TNSparseNet* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVStrI(const TAVStrI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
     TAVStrI& operator = (const TAVStrI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this; }
     bool operator < (const TAVStrI& I) const { return HI < I.HI; }
@@ -372,7 +372,7 @@ public:
     TStr GetName() { return isNode? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TStr GetDat() const { return HI[0]; }
     TAVStrI& operator++(int) { HI++; NI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   /// Node/edge float attribute iterator. Iterates through all nodes/edges for one float attribute.
@@ -382,10 +382,10 @@ public:
     TFltVecIter HI;
     bool isNode;
     TStr attr;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAFltI() : HI(), attr(), Graph(NULL) { }
-    TAFltI(const TFltVecIter& HIter, TStr attribute, bool isEdgeIter, const TNEANetSparse1* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
+    TAFltI(const TFltVecIter& HIter, TStr attribute, bool isEdgeIter, const TNSparseNet* GraphPt) : HI(HIter), attr(), Graph(GraphPt) { isNode = !isEdgeIter; attr = attribute; }
     TAFltI(const TAFltI& I) : HI(I.HI), attr(I.attr), Graph(I.Graph) { isNode = I.isNode; }
     TAFltI& operator = (const TAFltI& I) { HI = I.HI; Graph=I.Graph; isNode = I.isNode; attr = I.attr; return *this; }
     bool operator < (const TAFltI& I) const { return HI < I.HI; }
@@ -395,7 +395,7 @@ public:
     /// Returns true if the attribute has been deleted.
     bool IsDeleted(TFlt defaultValueN=TFlt::Mn, TFlt defaultValueE=TFlt::Mn) const { return isNode ? GetDat() == defaultValueN : GetDat() == defaultValueE; };
     TAFltI& operator++(int) { HI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
   class TAVFltI {
@@ -405,10 +405,10 @@ public:
     TIntVecIter NI;
     TFltVecIter HI;
     bool isNode;
-    const TNEANetSparse1 *Graph;
+    const TNSparseNet *Graph;
   public:
     TAVFltI() : NI(), HI(), Graph(NULL) { }
-    TAVFltI(const TIntVecIter& NIter, const TFltVecIter& HIter, bool isEdgeIter, const TNEANetSparse1* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
+    TAVFltI(const TIntVecIter& NIter, const TFltVecIter& HIter, bool isEdgeIter, const TNSparseNet* GraphPt) : NI(NIter), HI(HIter), Graph(GraphPt) { isNode = !isEdgeIter; }
     TAVFltI(const TAVFltI& I) : NI(I.NI), HI(I.HI), Graph(I.Graph) { isNode = I.isNode; }
     TAVFltI& operator = (const TAVFltI& I) { NI = I.NI; HI = I.HI; Graph = I.Graph; isNode = I.isNode; return *this; }
     bool operator < (const TAVFltI& I) const { return HI < I.HI; }
@@ -416,7 +416,7 @@ public:
     TStr GetName() { return isNode ? Graph->GetAttrNameN(NI[0]) : Graph->GetAttrNameE(NI[0]); }
     TFlt GetDat() const { return HI[0]; }
     TAVFltI& operator++(int) { HI++; NI++; return *this; }
-    friend class TNEANetSparse1;
+    friend class TNSparseNet;
   };
 
 private:
@@ -493,16 +493,16 @@ private:
 public:
 
   //UPDATE !!!!!!!!!!!
-  TNEANetSparse1() : CRef(), MxNId(0), MxEId(0), NodeH(), EdgeH(),
+  TNSparseNet() : CRef(), MxNId(0), MxEId(0), NodeH(), EdgeH(),
     AttrToIdE(), AttrToIdN() { }
   /// Constructor that reserves enough memory for a graph of nodes and edges.
-  explicit TNEANetSparse1(const int& Nodes, const int& Edges) : CRef(),
+  explicit TNSparseNet(const int& Nodes, const int& Edges) : CRef(),
     MxNId(0), MxEId(0), NodeH(), EdgeH(), AttrToIdE(), AttrToIdN()
     { Reserve(Nodes, Edges); }
-  TNEANetSparse1(const TNEANetSparse1& Graph) : MxNId(Graph.MxNId), MxEId(Graph.MxEId),
+  TNSparseNet(const TNSparseNet& Graph) : MxNId(Graph.MxNId), MxEId(Graph.MxEId),
     NodeH(Graph.NodeH), EdgeH(Graph.EdgeH), AttrToIdE(Graph.AttrToIdE), AttrToIdN(Graph.AttrToIdN) { }
   /// Constructor for loading the graph from a (binary) stream SIn.
-  TNEANetSparse1(TSIn& SIn) : MxNId(SIn), MxEId(SIn), NodeH(SIn), EdgeH(SIn),
+  TNSparseNet(TSIn& SIn) : MxNId(SIn), MxEId(SIn), NodeH(SIn), EdgeH(SIn),
      AttrToIdE(SIn), AttrToIdN(SIn) { }
   /// Saves the graph to a (binary) stream SOut.
   void Save(TSOut& SOut) const {
@@ -511,25 +511,25 @@ public:
 
 
 
-  /// Static cons returns pointer to graph. Ex: PNEANetSparse1 Graph=TNEANetSparse1::New().
-  static PNEANetSparse1 New() { return PNEANetSparse1(new TNEANetSparse1()); }
-  /// Static constructor that returns a pointer to the graph and reserves enough memory for Nodes nodes and Edges edges. ##TNEANetSparse1::New
-  static PNEANetSparse1 New(const int& Nodes, const int& Edges) { return PNEANetSparse1(new TNEANetSparse1(Nodes, Edges)); }
+  /// Static cons returns pointer to graph. Ex: PNSparseNet Graph=TNSparseNet::New().
+  static PNSparseNet New() { return PNSparseNet(new TNSparseNet()); }
+  /// Static constructor that returns a pointer to the graph and reserves enough memory for Nodes nodes and Edges edges. ##TNSparseNet::New
+  static PNSparseNet New(const int& Nodes, const int& Edges) { return PNSparseNet(new TNSparseNet(Nodes, Edges)); }
   /// Static constructor that loads the graph from a stream SIn and returns a pointer to it.
-  static PNEANetSparse1 Load(TSIn& SIn) { return PNEANetSparse1(new TNEANetSparse1(SIn)); }
+  static PNSparseNet Load(TSIn& SIn) { return PNSparseNet(new TNSparseNet(SIn)); }
   /// Allows for run-time checking the type of the graph (see the TGraphFlag for flags).
   bool HasFlag(const TGraphFlag& Flag) const;
-  TNEANetSparse1& operator = (const TNEANetSparse1& Graph) { if (this!=&Graph) {
+  TNSparseNet& operator = (const TNSparseNet& Graph) { if (this!=&Graph) {
     MxNId=Graph.MxNId; MxEId=Graph.MxEId; NodeH=Graph.NodeH; EdgeH=Graph.EdgeH; }
     return *this; }
 
   /// Returns the number of nodes in the graph.
   int GetNodes() const { return NodeH.Len(); }
-  /// Adds a node of ID NId to the graph. ##TNEANetSparse1::AddNode
+  /// Adds a node of ID NId to the graph. ##TNSparseNet::AddNode
   int AddNode(int NId = -1);
   /// Adds a node of ID NodeI.GetId() to the graph.
   int AddNode(const TNodeI& NodeId) { return AddNode(NodeId.GetId()); }
-  /// Deletes node of ID NId from the graph. ##TNEANetSparse1::DelNode
+  /// Deletes node of ID NId from the graph. ##TNSparseNet::DelNode
   void DelNode(const int& NId);
   /// Deletes node of ID NodeI.GetId() from the graph.
   void DelNode(const TNode& NodeI) { DelNode(NodeI.GetId()); }
@@ -715,13 +715,13 @@ public:
 
   /// Returns the number of edges in the graph.
   int GetEdges() const { return EdgeH.Len(); }
-  /// Adds an edge with ID EId between node IDs SrcNId and DstNId to the graph. ##TNEANetSparse1::AddEdge
+  /// Adds an edge with ID EId between node IDs SrcNId and DstNId to the graph. ##TNSparseNet::AddEdge
   int AddEdge(const int& SrcNId, const int& DstNId, int EId  = -1);
   /// Adds an edge between EdgeI.GetSrcNId() and EdgeI.GetDstNId() to the graph.
   int AddEdge(const TEdgeI& EdgeI) { return AddEdge(EdgeI.GetSrcNId(), EdgeI.GetDstNId(), EdgeI.GetId()); }
   /// Deletes an edge with edge ID EId from the graph.
   void DelEdge(const int& EId);
-  /// Deletes all edges between node IDs SrcNId and DstNId from the graph. ##TNEANetSparse1::DelEdge
+  /// Deletes all edges between node IDs SrcNId and DstNId from the graph. ##TNSparseNet::DelEdge
   void DelEdge(const int& SrcNId, const int& DstNId, const bool& IsDir = true);
   /// Tests whether an edge with edge ID EId exists in the graph.
   bool IsEdge(const int& EId) const { return EdgeH.IsKey(EId); }
@@ -767,30 +767,30 @@ public:
   /// Reserves memory for a graph of Nodes nodes and Edges edges.
   void Reserve(const int& Nodes, const int& Edges) {
     if (Nodes>0) { NodeH.Gen(Nodes/2); } if (Edges>0) { EdgeH.Gen(Edges/2); } }
-  /// Defragments the graph. ##TNEANetSparse1::Defrag
+  /// Defragments the graph. ##TNSparseNet::Defrag
   void Defrag(const bool& OnlyNodeLinks=false);
-  /// Checks the graph data structure for internal consistency. ##TNEANetSparse1::IsOk
+  /// Checks the graph data structure for internal consistency. ##TNSparseNet::IsOk
   bool IsOk(const bool& ThrowExcept=true) const;
   /// Print the graph in a human readable form to an output stream OutF.
   void Dump(FILE *OutF=stdout) const;
 
-  /// Attribute based add function for attr to Int value. ##TNEANetSparse1::AddIntAttrDatN
+  /// Attribute based add function for attr to Int value. ##TNSparseNet::AddIntAttrDatN
   int AddIntAttrDatN(const TNodeI& NodeId, const TInt& value, const TStr& attr) { return AddIntAttrDatN(NodeId.GetId(), value, attr); }
   int AddIntAttrDatN(const int& NId, const TInt& value, const TStr& attr);
-  /// Attribute based add function for attr to Str value. ##TNEANetSparse1::AddStrAttrDatN
+  /// Attribute based add function for attr to Str value. ##TNSparseNet::AddStrAttrDatN
   int AddStrAttrDatN(const TNodeI& NodeId, const TStr& value, const TStr& attr) { return AddStrAttrDatN(NodeId.GetId(), value, attr); }
   int AddStrAttrDatN(const int& NId, const TStr& value, const TStr& attr);
-  /// Attribute based add function for attr to Flt value. ##TNEANetSparse1::AddFltAttrDatN
+  /// Attribute based add function for attr to Flt value. ##TNSparseNet::AddFltAttrDatN
   int AddFltAttrDatN(const TNodeI& NodeId, const TFlt& value, const TStr& attr) { return AddFltAttrDatN(NodeId.GetId(), value, attr); }
   int AddFltAttrDatN(const int& NId, const TFlt& value, const TStr& attr);
 
-  /// Attribute based add function for attr to Int value. ##TNEANetSparse1::AddIntAttrDatE
+  /// Attribute based add function for attr to Int value. ##TNSparseNet::AddIntAttrDatE
   int AddIntAttrDatE(const TEdgeI& EdgeId, const TInt& value, const TStr& attr) { return AddIntAttrDatE(EdgeId.GetId(), value, attr); }
   int AddIntAttrDatE(const int& EId, const TInt& value, const TStr& attr);
-  /// Attribute based add function for attr to Str value. ##TNEANetSparse1::AddStrAttrDatE
+  /// Attribute based add function for attr to Str value. ##TNSparseNet::AddStrAttrDatE
   int AddStrAttrDatE(const TEdgeI& EdgeId, const TStr& value, const TStr& attr) { return AddStrAttrDatE(EdgeId.GetId(), value, attr); }
   int AddStrAttrDatE(const int& EId, const TStr& value, const TStr& attr);
-  /// Attribute based add function for attr to Flt value. ##TNEANetSparse1::AddFltAttrDatE
+  /// Attribute based add function for attr to Flt value. ##TNSparseNet::AddFltAttrDatE
   int AddFltAttrDatE(const TEdgeI& EdgeId, const TFlt& value, const TStr& attr) { return AddFltAttrDatE(EdgeId.GetId(), value, attr); }
   int AddFltAttrDatE(const int& EId, const TFlt& value, const TStr& attr);
 
@@ -858,13 +858,13 @@ public:
   // Get Vector for the Str Attribute attr.
   int GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1) const;
  
-  /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse1::GetSmallGraph
-  static PNEANetSparse1 GetSmallGraph();
-  friend class TPt<TNEANetSparse1>;
+  /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
+  static PNSparseNet GetSmallGraph();
+  friend class TPt<TNSparseNet>;
 };
 
 // set flags
 namespace TSnap {
-template <> struct IsMultiGraph<TNEANetSparse1> { enum { Val = 1 }; };
-template <> struct IsDirected<TNEANetSparse1> { enum { Val = 1 }; };
+template <> struct IsMultiGraph<TNSparseNet> { enum { Val = 1 }; };
+template <> struct IsDirected<TNSparseNet> { enum { Val = 1 }; };
 }
