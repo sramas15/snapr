@@ -304,7 +304,7 @@ public:
 	template<class PGraph> friend PGraph TSnap::ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, 
 			TStrV& SrcAttrs, TStrV& DstAttrs, TStrV& EdgeAttrs, TAttrAggr AggrPolicy);
   template<class PGraph> friend void TSnap::AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
-      TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy)
+      TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy);
   #ifdef _OPENMP
   template<class PGraphMP> friend PGraphMP TSnap::ToGraphMP(PTable Table, const TStr& SrcCol, const TStr& DstCol);
   template<class PGraphMP> friend PGraphMP TSnap::ToGraphMP2(PTable Table, const TStr& SrcCol, const TStr& DstCol);
