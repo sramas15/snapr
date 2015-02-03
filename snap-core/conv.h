@@ -171,7 +171,8 @@ PGraph ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol,
 
 template<class PGraph> 
 void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
-  TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy)
+  TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy, TInt DefaultInt,
+  TFlt DefaultFlt, TStr DefaultStr)
 {
 
   const TAttrType NodeType = Table->GetColType(SrcCol);
@@ -225,13 +226,19 @@ void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& D
       TInt Index = Table->GetColIdx(ColName);
       switch (T) {
         case atInt:
-          Graph->AddIntAttrDatE(CurrRowIdx, Table->IntCols[Index][CurrRowIdx], ColName);
+          if (Table->IntCols[Index][CurrRowIdx] != DefaultInt) {
+            Graph->AddIntAttrDatE(CurrRowIdx, Table->IntCols[Index][CurrRowIdx], ColName);
+          }
           break;
         case atFlt:
-          Graph->AddFltAttrDatE(CurrRowIdx, Table->FltCols[Index][CurrRowIdx], ColName);
+          if (Table->FltCols[Index][CurrRowIdx] != DefaultFlt) {
+            Graph->AddFltAttrDatE(CurrRowIdx, Table->FltCols[Index][CurrRowIdx], ColName);
+          }
           break;
         case atStr:
-          Graph->AddStrAttrDatE(CurrRowIdx, Table->GetStrVal(Index, CurrRowIdx), ColName);
+          if (Table->GetStrVal(Index, CurrRowIdx) != DefaultStr) {
+            Graph->AddStrAttrDatE(CurrRowIdx, Table->GetStrVal(Index, CurrRowIdx), ColName);
+          }
           break;
       }
     }
@@ -254,21 +261,27 @@ void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& D
         TStrIntVH IntAttrVals = NodeIntAttrs.GetDat(NId);
         for (TStrIntVH::TIter it = IntAttrVals.BegI(); it < IntAttrVals.EndI(); it++) {
           TInt AttrVal = Table->AggregateVector<TInt>(it.GetDat(), AggrPolicy);
-          Graph->AddIntAttrDatN(NId, AttrVal, it.GetKey());
+          if (AttrVal != DefaultInt) {
+            Graph->AddIntAttrDatN(NId, AttrVal, it.GetKey());
+          }
         }
       }
       if (NodeFltAttrs.IsKey(NId)) {
         TStrFltVH FltAttrVals = NodeFltAttrs.GetDat(NId);
         for (TStrFltVH::TIter it = FltAttrVals.BegI(); it < FltAttrVals.EndI(); it++) {
           TFlt AttrVal = Table->AggregateVector<TFlt>(it.GetDat(), AggrPolicy);
-          Graph->AddFltAttrDatN(NId, AttrVal, it.GetKey());
+          if (AttrVal != DefaultFlt) {
+            Graph->AddFltAttrDatN(NId, AttrVal, it.GetKey());
+          }
         }
       }
       if (NodeStrAttrs.IsKey(NId)) {
         TStrStrVH StrAttrVals = NodeStrAttrs.GetDat(NId);
         for (TStrStrVH::TIter it = StrAttrVals.BegI(); it < StrAttrVals.EndI(); it++) {
           TStr AttrVal = Table->AggregateVector<TStr>(it.GetDat(), AggrPolicy);
-          Graph->AddStrAttrDatN(NId, AttrVal, it.GetKey());
+          if (AttrVal != DefaultStr) {
+            Graph->AddStrAttrDatN(NId, AttrVal, it.GetKey());
+          }
         }
       }
     }
