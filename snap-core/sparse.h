@@ -43,7 +43,7 @@ public:
         IntAttrs.SetVal(index, Val);
       }
     }
-    TInt GetIntAttr(const TInt& AttrId) const { int index = GetIntAttrIndex(AttrId); return index == -1 ? TInt(-1) : TInt(IntAttrs.GetVal(index)); }
+    TInt GetIntAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetIntAttrIndex(AttrId) : ind; return index == -1 ? TInt(-1) : TInt(IntAttrs.GetVal(index)); }
     int GetIntAttrIndex(const TInt& AttrId) const { return IntAttrIds.SearchForw(AttrId); }
     bool DelIntAttr(const TInt& AttrId) {
       int index = GetIntAttrIndex(AttrId);
@@ -62,7 +62,7 @@ public:
         FltAttrs.SetVal(index, Val);
       }
     }
-    TFlt GetFltAttr(const TInt& AttrId) const { int index = GetFltAttrIndex(AttrId); return index == -1 ? TFlt(-1) : TFlt(FltAttrs.GetVal(index)); }
+    TFlt GetFltAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetFltAttrIndex(AttrId) : ind; return index == -1 ? TFlt(-1) : TFlt(FltAttrs.GetVal(index)); }
     int GetFltAttrIndex(const TInt& AttrId) const { return FltAttrIds.SearchForw(AttrId); }
     bool DelFltAttr(const TInt& AttrId) {
       int index = GetFltAttrIndex(AttrId);
@@ -81,7 +81,7 @@ public:
         StrAttrs.SetVal(index, Val);
       }
     }
-    TStr GetStrAttr(const TInt& AttrId) const { int index = GetStrAttrIndex(AttrId); return index == -1 ? TStr::GetNullStr() : StrAttrs.GetVal(index); }
+    TStr GetStrAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetStrAttrIndex(AttrId) : ind; return index == -1 ? TStr::GetNullStr() : StrAttrs.GetVal(index); }
     int GetStrAttrIndex(const TInt& AttrId) const { return StrAttrIds.SearchForw(AttrId); }
     bool DelStrAttr(const TInt& AttrId) {
       int index = GetStrAttrIndex(AttrId);
@@ -120,7 +120,7 @@ public:
         IntAttrs.SetVal(index, Val);
       }
     }
-    TInt GetIntAttr(const TInt& AttrId) const { int index = GetIntAttrIndex(AttrId); return index == -1 ? TInt(-1) : TInt(IntAttrs.GetVal(index)); }
+    TInt GetIntAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetIntAttrIndex(AttrId) : ind; return index == -1 ? TInt(-1) : TInt(IntAttrs.GetVal(index)); }
     int GetIntAttrIndex(const TInt& AttrId) const { return IntAttrIds.SearchForw(AttrId); }
     bool DelIntAttr(const TInt& AttrId) {
       int index = GetIntAttrIndex(AttrId);
@@ -139,7 +139,7 @@ public:
         FltAttrs.SetVal(index, Val);
       }
     }
-    TFlt GetFltAttr(const TInt& AttrId) const { int index = GetFltAttrIndex(AttrId); return index == -1 ? TFlt(-1) : TFlt(FltAttrs.GetVal(index)); }
+    TFlt GetFltAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetFltAttrIndex(AttrId) : ind; return index == -1 ? TFlt(-1) : TFlt(FltAttrs.GetVal(index)); }
     int GetFltAttrIndex(const TInt& AttrId) const { return FltAttrIds.SearchForw(AttrId); }
     bool DelFltAttr(const TInt& AttrId) {
       int index = GetFltAttrIndex(AttrId);
@@ -158,7 +158,7 @@ public:
         StrAttrs.SetVal(index, Val);
       }
     }
-    TStr GetStrAttr(const TInt& AttrId) const { int index = GetStrAttrIndex(AttrId); return index == -1 ? TStr::GetNullStr() : StrAttrs.GetVal(index); }
+    TStr GetStrAttr(const TInt& AttrId, int ind=-1) const { int index = (ind == -1) ? GetStrAttrIndex(AttrId) : ind; return index == -1 ? TStr::GetNullStr() : StrAttrs.GetVal(index); }
     int GetStrAttrIndex(const TInt& AttrId) const { return StrAttrIds.SearchForw(AttrId); }
     bool DelStrAttr(const TInt& AttrId) {
       int index = GetStrAttrIndex(AttrId);
@@ -857,6 +857,25 @@ public:
 
   // Get Vector for the Str Attribute attr.
   int GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1) const;
+
+
+  // Get Vector for the Flt Attribute attr.
+  int GetFltAttrVecE(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int EId=-1) const;
+
+  // Get Vector for the Int Attribute attr.
+  int GetIntAttrVecE(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int EId=-1) const;
+
+  // Get Vector for the Str Attribute attr.
+  int GetStrAttrVecE(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int EId=-1) const;
+
+    // Get Vector for the Flt Attribute attr.
+  int GetFltAttrVecN(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int NId=-1) const;
+
+  // Get Vector for the Int Attribute attr.
+  int GetIntAttrVecN(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int NId=-1) const;
+
+  // Get Vector for the Str Attribute attr.
+  int GetStrAttrVecN(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int NId=-1) const;
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
   static PNSparseNet GetSmallGraph();
