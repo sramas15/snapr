@@ -37,8 +37,8 @@ public:
     void AddIntAttr(const TInt& AttrId, const TInt& Val) { 
       int index = GetIntAttrIndex(AttrId);
       if (index == -1) {
-        IntAttrIds.Ins(0,AttrId);
-        IntAttrs.Ins(0,Val);
+        IntAttrIds.Add(AttrId);
+        IntAttrs.Add(Val);
       } else {
         IntAttrs.SetVal(index, Val);
       }
@@ -56,8 +56,8 @@ public:
     void AddFltAttr(const TInt& AttrId, const TFlt& Val) { 
       int index = GetFltAttrIndex(AttrId);
       if (index == -1) {
-        FltAttrIds.Ins(0,AttrId);
-        FltAttrs.Ins(0,Val);
+        FltAttrIds.Add(AttrId);
+        FltAttrs.Add(Val);
       } else {
         FltAttrs.SetVal(index, Val);
       }
@@ -75,8 +75,8 @@ public:
     void AddStrAttr(const TInt& AttrId, const TStr& Val) { 
       int index = GetStrAttrIndex(AttrId);
       if (index == -1) {
-        StrAttrIds.Ins(0,AttrId);
-        StrAttrs.Ins(0,Val);
+        StrAttrIds.Add(AttrId);
+        StrAttrs.Add(Val);
       } else {
         StrAttrs.SetVal(index, Val);
       }
@@ -114,8 +114,8 @@ public:
     void AddIntAttr(const TInt& AttrId, const TInt& Val) { 
       int index = GetIntAttrIndex(AttrId);
       if (index == -1) {
-        IntAttrIds.Ins(0,AttrId);
-        IntAttrs.Ins(0,Val);
+        IntAttrIds.Add(AttrId);
+        IntAttrs.Add(Val);
       } else {
         IntAttrs.SetVal(index, Val);
       }
@@ -133,8 +133,8 @@ public:
     void AddFltAttr(const TInt& AttrId, const TFlt& Val) { 
       int index = GetFltAttrIndex(AttrId);
       if (index == -1) {
-        FltAttrIds.Ins(0,AttrId);
-        FltAttrs.Ins(0,Val);
+        FltAttrIds.Add(AttrId);
+        FltAttrs.Add(Val);
       } else {
         FltAttrs.SetVal(index, Val);
       }
@@ -152,8 +152,8 @@ public:
     void AddStrAttr(const TInt& AttrId, const TStr& Val) { 
       int index = GetStrAttrIndex(AttrId);
       if (index == -1) {
-        StrAttrIds.Ins(0,AttrId);
-        StrAttrs.Ins(0,Val);
+        StrAttrIds.Add(AttrId);
+        StrAttrs.Add(Val);
       } else {
         StrAttrs.SetVal(index, Val);
       }
