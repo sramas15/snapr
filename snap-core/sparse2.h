@@ -748,6 +748,24 @@ public:
 
   // Get Vector for the Str Attribute attr.
   int GetStrAttrVecN(const TStr& attr, TVec<TStr>& StrAttrs, int NId=-1) const;
+
+  // Get Vector for the Flt Attribute attr.
+  int GetFltAttrVecE(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int EId=-1) const;
+
+  // Get Vector for the Int Attribute attr.
+  int GetIntAttrVecE(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int EId=-1) const;
+
+  // Get Vector for the Str Attribute attr.
+  int GetStrAttrVecE(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int EId=-1) const;
+
+    // Get Vector for the Flt Attribute attr.
+  int GetFltAttrVecN(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int NId=-1) const;
+
+  // Get Vector for the Int Attribute attr.
+  int GetIntAttrVecN(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int NId=-1) const;
+
+  // Get Vector for the Str Attribute attr.
+  int GetStrAttrVecN(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int NId=-1) const;
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();
