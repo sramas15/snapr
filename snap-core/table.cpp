@@ -1,5 +1,6 @@
 //#include "table.h"
 //#include <sys/time.h>
+#include <time.h>
 
 TInt const TTable::Last = -1;
 TInt const TTable::Invalid = -2;
@@ -308,6 +309,31 @@ TTable::TTable(const TTable& Table, const TIntV& RowIDs) : Context(Table.Context
   AddSelectedRows(Table, RowIDs);
   IsNextDirty = 0;
   InitIds();
+}
+
+static PTable PermuteRows(PTable Original, TIntV& Perm) {
+  PTable T = New(Original);
+  int NumRows = T->NumRows;
+  Perm = TIntV(T->Schema);
+  for (int i = 0; i < NumRows; i++) {
+    Perm.Add(i);
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle();
+  // {attr, rowid}
+  for (int RowIdx = 0; RowIdx < NumRows; RowIdx++) {
+    int SwapIdx = Perm[RowIdx];
+    for (int IntIdx = 0; IntIdx < T->IntCols.Len(); IntIdx++) {
+      T->IntCols[IntIdx][RowIdx] = Original->IntCols[IntIdx][SwapIdx];
+    }
+    for (int FltIdx = 0; FltIdx < T->FltCols.Len(); FltIdx++) {
+      T->FltCols[FltIdx][RowIdx] = Original->FltCols[FltIdx][SwapIdx];
+    }
+    for (int StrIdx = 0; StrIdx < T->StrColMaps.Len(); StrIdx++) {
+      T->StrColMaps[StrIdx][RowIdx] = Original->StrColMaps[StrIdx][SwapIdx];
+    }
+  }
+  return T;
 }
 
 PTable TTable::LoadSS(const Schema& S, const TStr& InFNm, TTableContext& Context, 

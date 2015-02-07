@@ -45,6 +45,7 @@ public:
   TTableContext() {}
   /// Loads TTableContext in binary from \c SIn.
   TTableContext(TSIn& SIn): StringVals(SIn) {}
+  TTableContext(TTableContext& T) : StringVals(T.StringVals) {}
   /// Saves TTableContext in binary to \c SOut.
   void Save(TSOut& SOut) { StringVals.Save(SOut); }
 };
@@ -284,6 +285,10 @@ namespace TSnap{
   void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
   TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy, TInt DefaultInt=(TInt)TInt::Mn,
   TFlt DefaultFlt=(TFlt)TFlt::Mn, TStr DefaultStr=TStr::GetNullStr());
+  template<class PGraph> 
+  void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
+  TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy, TIntV& Perm, TInt DefaultInt=(TInt)TInt::Mn,
+  TFlt DefaultFlt=(TFlt)TFlt::Mn, TStr DefaultStr=TStr::GetNullStr());
 	/// Converts table to a network. Suitable for PNEANet - Assumes no node and edge attributes. 
 	template<class PGraph> PGraph ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, TAttrAggr AggrPolicy);
   #ifdef _OPENMP
@@ -307,6 +312,10 @@ public:
   template<class PGraph> friend
   void TSnap::AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
   TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy, TInt DefaultInt,
+  TFlt DefaultFlt, TStr DefaultStr);
+  template<class PGraph> friend
+  void TSnap::AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& DstCol, 
+  TStrV& SrcAttrV, TStrV& DstAttrV, TStrV& EdgeAttrV, TAttrAggr AggrPolicy, TIntV& Perm, TInt DefaultInt,
   TFlt DefaultFlt, TStr DefaultStr);
   #ifdef _OPENMP
   template<class PGraphMP> friend PGraphMP TSnap::ToGraphMP(PTable Table, const TStr& SrcCol, const TStr& DstCol);
@@ -680,6 +689,8 @@ public:
   //   PTable T = New(Table); T->Name = TableName; 
   //   return T; 
   // }
+
+  static PTable PermuteRows(PTable Original, TIntV& Perm);
 
 /***** Save / Load functions *****/
   /// Loads table from spread sheet (TSV, CSV, etc).
