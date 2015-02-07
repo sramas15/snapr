@@ -314,7 +314,7 @@ TTable::TTable(const TTable& Table, const TIntV& RowIDs) : Context(Table.Context
 static PTable TTable::PermuteRows(PTable Original, TIntV& Perm) {
   PTable T = New(Original);
   int NumRows = T->NumRows;
-  Perm = TIntV(T->Schema);
+  Perm = TIntV();
   for (int i = 0; i < NumRows; i++) {
     Perm.Add(i);
   }
