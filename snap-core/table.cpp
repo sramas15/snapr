@@ -311,7 +311,7 @@ TTable::TTable(const TTable& Table, const TIntV& RowIDs) : Context(Table.Context
   InitIds();
 }
 
-static PTable TTable::PermuteRows(PTable Original, TIntV& Perm) {
+PTable TTable::PermuteRows(PTable Original, TIntV& Perm) {
   PTable T = New(Original);
   int NumRows = T->NumRows;
   Perm = TIntV();
@@ -319,7 +319,7 @@ static PTable TTable::PermuteRows(PTable Original, TIntV& Perm) {
     Perm.Add(i);
   }
   TRnd R(time(NULL));
-  Perm.Shuffle();
+  Perm.Shuffle(R);
   // {attr, rowid}
   for (int RowIdx = 0; RowIdx < NumRows; RowIdx++) {
     int SwapIdx = Perm[RowIdx];
