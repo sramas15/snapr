@@ -766,6 +766,12 @@ public:
 
   // Get Vector for the Str Attribute attr.
   int GetStrAttrVecN(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int NId=-1) const;
+
+  void GroupByIntNodeVal(THash<TInt, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal=false, TInt NoVal=TInt::Mn) const;
+ 
+  void GroupByFltNodeVal(THash<TFlt, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal=false, TFlt NoVal=TFlt::Mn) const;
+
+  void GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal=false, TStr NoVal=TStr::GetNullStr()) const;
  
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();

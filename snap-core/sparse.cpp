@@ -872,3 +872,75 @@ int TNSparseNet::GetStrAttrVecN(const TStr& attr, TVec<TPair<TInt, TStr> >& StrA
   }
   return 0;
 }
+
+void TNSparseNet::GroupByIntNodeVal(THash<TInt, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal, TInt NoVal) const {
+  Grouping = THash<TInt, TVec<TInt> >();
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  TInt AttrId = GetAttrIdN(attr, IntType);
+  if (IncludeNoVal) {
+    Grouping.AddDat(NoVal, TIntV());
+  }
+  while (!NodeHI.IsEnd()) {
+    TInt Id = NodeHI.GetKey();
+    const TNode& Node = NodeH.GetDat(Id);
+    int index = Node.GetIntAttrIndex(AttrId);
+    if (index != -1) {
+      TInt Val = Node.GetIntAttr(AttrId, index);
+      if (!Grouping.IsKey(Val)) {
+        Grouping.AddDat(Val, TIntV());
+      }
+      Grouping.GetDat(Val).Add(Id);
+    } else if (IncludeNoVal) {
+      Grouping.GetDat(NoVal).Add(Id);
+    }
+    NodeHI++;
+  }
+}
+ 
+void TNSparseNet::GroupByFltNodeVal(THash<TFlt, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal, TFlt NoVal) const {
+  Grouping = THash<TFlt, TVec<TInt> >();
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  TInt AttrId = GetAttrIdN(attr, FltType);
+  if (IncludeNoVal) {
+    Grouping.AddDat(NoVal, TIntV());
+  }
+  while (!NodeHI.IsEnd()) {
+    TInt Id = NodeHI.GetKey();
+    const TNode& Node = NodeH.GetDat(Id);
+    int index = Node.GetFltAttrIndex(AttrId);
+    if (index != -1) {
+      TFlt Val = Node.GetFltAttr(AttrId, index);
+      if (!Grouping.IsKey(Val)) {
+        Grouping.AddDat(Val, TIntV());
+      }
+      Grouping.GetDat(Val).Add(Id);
+    } else if (IncludeNoVal) {
+      Grouping.GetDat(NoVal).Add(Id);
+    }
+    NodeHI++;
+  }
+}
+
+void TNSparseNet::GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal, TStr NoVal) const {
+  Grouping = THash<TStr, TVec<TInt> >();
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  TInt AttrId = GetAttrIdN(attr, StrType);
+  if (IncludeNoVal) {
+    Grouping.AddDat(NoVal, TIntV());
+  }
+  while (!NodeHI.IsEnd()) {
+    TInt Id = NodeHI.GetKey();
+    const TNode& Node = NodeH.GetDat(Id);
+    int index = Node.GetStrAttrIndex(AttrId);
+    if (index != -1) {
+      TStr Val = Node.GetStrAttr(AttrId, index);
+      if (!Grouping.IsKey(Val)) {
+        Grouping.AddDat(Val, TIntV());
+      }
+      Grouping.GetDat(Val).Add(Id);
+    } else if (IncludeNoVal) {
+      Grouping.GetDat(NoVal).Add(Id);
+    }
+    NodeHI++;
+  }
+}
