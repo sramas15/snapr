@@ -931,106 +931,138 @@ PNEANetSparse2 TNEANetSparse2::GetSmallGraph() {
   }
 
   int TNEANetSparse2::GetFltAttrVecE(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int EId) const {
+  TIntV Perm;
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
-  FltAttrs = TVec<TPair<TInt, TFlt> >();
-  TInt AttrId = GetAttrIdE(attr, FltType);
   while (!EdgeHI.IsEnd()) {
-    TInt Id = EdgeHI.GetDat().GetId();
-    TPair<TInt, TInt> Key(Id, AttrId);
-    if (FltAttrsE.IsKey(Key)) {
-      TPair<TInt, TFlt> Val(Id, FltAttrsE.GetDat(Key));
-      FltAttrs.Add(Val);
-    }
+    Perm.Add(EdgeHI.GetKey());
     EdgeHI++;
   }
-  /*
-  StrIntPrH::TIter NodeHI, TStrV& Names) const {
-  while (!NodeHI.IsEnd()) {
-  } */
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
+  FltAttrs = TVec<TPair<TInt, TFlt> >();
+  TInt AttrId = GetAttrIdN(attr, FltType);
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
+    TPair<TInt, TInt> Key(Id, AttrId);
+    if (FltAttrsN.IsKey(Key)) {
+      TPair<TInt, TFlt> Val(Id, FltAttrsN.GetDat(Key));
+      FltAttrs.Add(Val);
+    }
+  }
   return 0;
 }
 
   // Get Vector for the Int Attribute attr.
 int TNEANetSparse2::GetIntAttrVecE(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int EId) const{ 
+  TIntV Perm;
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
-  IntAttrs = TVec<TPair<TInt, TInt> >();
-  TInt AttrId = GetAttrIdE(attr, IntType);
   while (!EdgeHI.IsEnd()) {
-    TInt Id = EdgeHI.GetDat().GetId();
+    Perm.Add(EdgeHI.GetKey());
+    EdgeHI++;
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
+  IntAttrs = TVec<TPair<TInt, TInt> >();
+  TInt AttrId = GetAttrIdN(attr, IntType);
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
     TPair<TInt, TInt> Key(Id, AttrId);
-    if (IntAttrsE.IsKey(Key)) {
-      TPair<TInt, TInt> Val(Id, IntAttrsE.GetDat(Key));
+    if (IntAttrsN.IsKey(Key)) {
+      TPair<TInt, TInt> Val(Id, IntAttrsN.GetDat(Key));
       IntAttrs.Add(Val);
     }
-    EdgeHI++;
   }
   return 0;
 }
 
   // Get Vector for the Str Attribute attr.
 int TNEANetSparse2::GetStrAttrVecE(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int EId) const{
+  TIntV Perm;
   THash<TInt, TEdge>::TIter EdgeHI = EdgeH.BegI();
-  StrAttrs = TVec<TPair<TInt, TStr> >();
-  TInt AttrId = GetAttrIdE(attr, StrType);
   while (!EdgeHI.IsEnd()) {
-    TInt Id = EdgeHI.GetDat().GetId();
+    Perm.Add(EdgeHI.GetKey());
+    EdgeHI++;
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
+  StrAttrs = TVec<TPair<TInt, TStr> >();
+  TInt AttrId = GetAttrIdN(attr, StrType);
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
     TPair<TInt, TInt> Key(Id, AttrId);
-    if (StrAttrsE.IsKey(Key)) {
-      TPair<TInt, TStr> Val(Id, StrAttrsE.GetDat(Key));
+    if (StrAttrsN.IsKey(Key)) {
+      TPair<TInt, TStr> Val(Id, StrAttrsN.GetDat(Key));
       StrAttrs.Add(Val);
     }
-    EdgeHI++;
   }
   return 0;
 }
 
     // Get Vector for the Flt Attribute attr.
 int TNEANetSparse2::GetFltAttrVecN(const TStr& attr, TVec<TPair<TInt, TFlt> >& FltAttrs, int NId) const{
+  TIntV Perm;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while (!NodeHI.IsEnd()) {
+    Perm.Add(NodeHI.GetKey());
+    NodeHI++;
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
   FltAttrs = TVec<TPair<TInt, TFlt> >();
   TInt AttrId = GetAttrIdN(attr, FltType);
-  while (!NodeHI.IsEnd()) {
-    TInt Id = NodeHI.GetDat().GetId();
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
     TPair<TInt, TInt> Key(Id, AttrId);
     if (FltAttrsN.IsKey(Key)) {
       TPair<TInt, TFlt> Val(Id, FltAttrsN.GetDat(Key));
       FltAttrs.Add(Val);
     }
-    NodeHI++;
   }
   return 0;
 }
 
   // Get Vector for the Int Attribute attr.
 int TNEANetSparse2::GetIntAttrVecN(const TStr& attr, TVec<TPair<TInt, TInt> >& IntAttrs, int NId) const {
+  TIntV Perm;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while (!NodeHI.IsEnd()) {
+    Perm.Add(NodeHI.GetKey());
+    NodeHI++;
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
   IntAttrs = TVec<TPair<TInt, TInt> >();
   TInt AttrId = GetAttrIdN(attr, IntType);
-  while (!NodeHI.IsEnd()) {
-    TInt Id = NodeHI.GetDat().GetId();
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
     TPair<TInt, TInt> Key(Id, AttrId);
     if (IntAttrsN.IsKey(Key)) {
       TPair<TInt, TInt> Val(Id, IntAttrsN.GetDat(Key));
       IntAttrs.Add(Val);
     }
-    NodeHI++;
   }
   return 0;
 }
 
   // Get Vector for the Str Attribute attr.
 int TNEANetSparse2::GetStrAttrVecN(const TStr& attr, TVec<TPair<TInt, TStr> >& StrAttrs, int NId) const {
+  TIntV Perm;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while (!NodeHI.IsEnd()) {
+    Perm.Add(NodeHI.GetKey());
+    NodeHI++;
+  }
+  TRnd R(time(NULL));
+  Perm.Shuffle(R);
   StrAttrs = TVec<TPair<TInt, TStr> >();
   TInt AttrId = GetAttrIdN(attr, StrType);
-  while (!NodeHI.IsEnd()) {
-    TInt Id = NodeHI.GetDat().GetId();
+  for (int i = 0; i < Perm.Len(); i++) {
+    TInt Id = Perm[i];
     TPair<TInt, TInt> Key(Id, AttrId);
     if (StrAttrsN.IsKey(Key)) {
       TPair<TInt, TStr> Val(Id, StrAttrsN.GetDat(Key));
       StrAttrs.Add(Val);
     }
-    NodeHI++;
   }
   return 0;
 }
