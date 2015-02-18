@@ -773,6 +773,11 @@ public:
 
   void GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &attr, bool IncludeNoVal=false, TStr NoVal=TStr::GetNullStr()) const;
  
+  void GetIntKeyFreq(THash<TStr, TInt>& Freq) const;
+  void GetFltKeyFreq(THash<TStr, TInt>& Freq) const;
+  void GetStrKeyFreq(THash<TStr, TInt>& Freq) const;
+  void GetKeyFreq(THash<TStr, TInt>& Freq) const;
+
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();
   friend class TPt<TNEANetSparse2>;

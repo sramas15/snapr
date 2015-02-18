@@ -1137,3 +1137,115 @@ void TNEANetSparse2::GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr 
     NodeHI++;
   }
 }
+
+
+
+void TNEANetSparse2::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
+  Freq = THash<TStr, TInt> ();
+  THash<TInt, TInt> AttrFreqById;
+  // TPair<TInt, TInt> Key(NId, AttrId);
+  //return IntAttrsN.GetDat(Key);
+
+  THash<TPair<TInt, TInt>, TInt >::TIter IntI = IntAttrsN.BegI();
+  while(!IntI.IsEnd()) {
+    TInt Key = IntI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    IntI++;
+  }
+
+  THash<TInt, TInt>::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    Freq.AddDat(Name, FreqI.GetDat());
+    FreqI++;
+  }
+}
+void TNEANetSparse2::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
+  Freq = THash<TStr, TInt> ();
+  THash<TInt, TInt> AttrFreqById;
+
+  THash<TPair<TInt, TInt>, TFlt >::TIter FltI = FltAttrsN.BegI();
+  while(!FltI.IsEnd()) {
+    TInt Key = FltI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    FltI++;
+  }
+
+
+  THash<TInt, TInt>::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    Freq.AddDat(Name, FreqI.GetDat());
+    FreqI++;
+  }
+
+}
+void TNEANetSparse2::GetStrKeyFreq(THash<TStr, TInt>& Freq) const {
+  Freq = THash<TStr, TInt> ();
+  THash<TInt, TInt> AttrFreqById;
+
+  THash<TPair<TInt, TInt>, TStr >::TIter StrI = StrAttrsN.BegI();
+  while(!StrI.IsEnd()) {
+    TInt Key = StrI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    StrI++;
+  }
+
+  THash<TInt, TInt>::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    Freq.AddDat(Name, FreqI.GetDat());
+    FreqI++;
+  }
+}
+void TNEANetSparse2::GetKeyFreq(THash<TStr, TInt>& Freq) const {
+  Freq = THash<TStr, TInt> ();
+  THash<TInt, TInt> AttrFreqById;
+  
+  THash<TPair<TInt, TInt>, TInt >::TIter IntI = IntAttrsN.BegI();
+  while(!IntI.IsEnd()) {
+    TInt Key = IntI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    IntI++;
+  }
+
+  THash<TPair<TInt, TInt>, TFlt >::TIter FltI = FltAttrsN.BegI();
+  while(!FltI.IsEnd()) {
+    TInt Key = FltI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    FltI++;
+  }
+
+  THash<TPair<TInt, TInt>, TStr >::TIter StrI = StrAttrsN.BegI();
+  while(!StrI.IsEnd()) {
+    TInt Key = StrI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Key)) {
+      AttrFreqById.AddDat(Key, 0);
+    }
+    AttrFreqById[Key] += 1;
+    StrI++;
+  }
+
+  THash<TInt, TInt>::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    Freq.AddDat(Name, FreqI.GetDat());
+    FreqI++;
+  }
+
+}
