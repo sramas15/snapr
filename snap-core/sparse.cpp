@@ -953,9 +953,12 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
     AttrNameNI(NodeHI.GetKey(), Names);
     for (int i = 0; i < Names.Len(); i++) {
       if (!Freq.IsKey(Names[i])) {
-        Freq.AddDat(Names[i], TInt(0));
+        Freq.AddDat(Names[i], TInt(1));
+      } else { 
+        TStr Name = Names[i];
+        int CurrFreq = Freq(Name);
+        Freq.AddDat(Names[i], CurrFreq+1);
       }
-      Freq[Names[i]] += 1;
     }
   }
   /*THash<TInt, TInt> AttrFreqById;
