@@ -950,7 +950,7 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TStrV Names;
-    Graph->AttrNameNI(NodeHI.GetKey(), Names);
+    AttrNameNI(NodeHI.GetKey(), Names);
     for (int i = 0; i < Names.Len(); i++) {
       if (!Freq.IsKey(Names[i])) {
         Freq.AddDat(Names[i], TInt(0));
