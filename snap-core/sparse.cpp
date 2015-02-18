@@ -960,6 +960,7 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
         Freq.AddDat(Names[i], CurrFreq+1);
       }
     }
+    NodeHI++;
   }
   /*THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
@@ -996,6 +997,7 @@ void TNSparseNet::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
         Freq.AddDat(Names[i], CurrFreq+1);
       }
     }
+    NodeHI++;
   }
   /*Freq = THash<TStr, TInt> ();
   THash<TInt, TInt> AttrFreqById;
@@ -1034,6 +1036,7 @@ void TNSparseNet::GetStrKeyFreq(THash<TStr, TInt>& Freq) const {
         Freq.AddDat(Names[i], CurrFreq+1);
       }
     }
+    NodeHI++;
   }
   /*Freq = THash<TStr, TInt> ();
   THash<TInt, TInt> AttrFreqById;
@@ -1071,6 +1074,7 @@ void TNSparseNet::GetKeyFreq(THash<TStr, TInt>& Freq) const {
         Freq.AddDat(Names[i], CurrFreq+1);
       }
     }
+    NodeHI++;
   }
 
 }
