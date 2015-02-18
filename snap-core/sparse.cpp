@@ -947,7 +947,7 @@ void TNSparseNet::GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &at
 
 void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
   Freq = THash<TStr, TInt> ();
-  THash<TIng, TNode>::TIter NodeHI = NodeH.BegI();
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TStrV Names;
     Graph->AttrNameNI(NodeHI.GetKey(), Names);
