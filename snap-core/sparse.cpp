@@ -947,7 +947,18 @@ void TNSparseNet::GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &at
 
 void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
   Freq = THash<TStr, TInt> ();
-  THash<TInt, TInt> AttrFreqById;
+  THash<TIng, TNode>::TIter NodeHI = NodeH.BegI();
+  while(!NodeHI.IsEnd()) {
+    TStrV Names;
+    Graph->AttrNameNI(NodeHI.GetKey(), Names);
+    for (int i = 0; i < Names.Len(); i++) {
+      if (!Freq.IsKey(Names[i])) {
+        Freq.AddDat(Names[i], TInt(0));
+      }
+      Freq[Names[i]] += 1;
+    }
+  }
+  /*THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TNode &Node = NodeHI.GetDat();
@@ -965,7 +976,7 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
     TStr Name = GetAttrNameN(FreqI.GetKey());
     Freq.AddDat(Name, FreqI.GetDat());
     FreqI++;
-  }
+  }*/
 }
 void TNSparseNet::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
   Freq = THash<TStr, TInt> ();
