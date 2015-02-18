@@ -4,7 +4,10 @@ TStr CreateName(TStr& Prefix, TStr& Name) {
 	if (Prefix.Empty()) {
 		return Name;
 	} else {
-		return Prefix.CStr() + ":" + Name.CStr();
+                TStr NewStr = Prefix;
+                NewStr += ":";
+                NewStr += Name;
+		return NewStr;
 	}
 }
 
@@ -19,20 +22,27 @@ void ParseLine(PGraph& Graph, TInt NId, PJsonVal& Val, TStr& Prefix) {
 			ParseLine(Graph, NId, NewVal, NewPrefix);
 		}
 	} else if (Val->IsBool()) {
-		Graph->AddStrAttrDatN(NId, Val->GetStr(), Prefix);
+		Graph->AddStrAttrDatN(NId, TStr("Bool"), Prefix);
 	} else if (Val->IsNum()) {
 		double attr = Val->GetNum();
 		TFlt DblVal(attr);
 		Graph->AddFltAttrDatN(NId, DblVal, Prefix);
 	} else if (Val->IsStr()) {
 		PJsonVal ValStr = TJsonVal::GetValFromStr(Val->GetStr());
-		if (!ValStr->IsStr()) {
+		if (ValStr->IsObj() || ValStr->IsNum()) {
 			ParseLine(Graph, NId, ValStr, Prefix);
 		} else {
 			Graph->AddStrAttrDatN(NId, Val->GetStr(), Prefix);
 		}
 	} else if (Val->IsArr()) {
-		Graph->AddStrAttrDatN(NId, Val->GetStr(), Prefix);
+		for (int i = 0; i < Val->GetArrVals(); i++) {
+                	TStr NewPrefix = Prefix;
+			NewPrefix += "-";
+			NewPrefix += TInt(i).GetStr();
+			PJsonVal ArrVal = Val->GetArrVal(i);
+			ParseLine(Graph, NId, ArrVal, NewPrefix);
+                }
+		//Graph->AddStrAttrDatN(NId, TStr("arr"), Prefix);
 	} else if (Val->IsNull()) {
 		Graph->AddStrAttrDatN(NId, TStr::GetNullStr(), Prefix);
 	}
@@ -46,7 +56,7 @@ void ParseLine(PGraph& Graph, TInt NId, TStr& Line, TStr& Prefix) {
 
 int main(int argc, char* argv[]) {
 	TStr FileName("attr/test.json");
-	TStr Separator(" ");
+	TSsFmt Separator = ssfWhiteSep;
 	TSsParser Parser(FileName, Separator);
 	PNSparseNet Net = PNSparseNet::New();
 	int i = 0;
@@ -54,8 +64,10 @@ int main(int argc, char* argv[]) {
 		TChA Line = Parser.GetLnStr();
 		TStr ConvLine(Line.CStr());
 		TStr Prefix("");
+                Net->AddNode(i);
 		ParseLine(Net, TInt(i), ConvLine, Prefix);
 		i++;
 	}
+        Net->Dump();
 	return 0;
 }
