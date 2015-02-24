@@ -977,7 +977,7 @@ void TNSparseNet::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
       if (!AttrFreqById.IsKey(Id)) {
         AttrFreqById.AddDat(Id, TInt(0));
       }
-      AttrFreqById[Id] += 1;
+      AttrFreqById(Id) += 1;
     }
     NodeHI++;
   }
@@ -1000,7 +1000,7 @@ void TNSparseNet::GetStrKeyFreq(THash<TStr, TInt>& Freq) const {
       if (!AttrFreqById.IsKey(Id)) {
         AttrFreqById.AddDat(Id, TInt(0));
       }
-      AttrFreqById[Id] += 1;
+      AttrFreqById(Id) += 1;
     }
     NodeHI++;
   }
@@ -1030,14 +1030,14 @@ void TNSparseNet::GetKeyFreq(THash<TStr, TInt>& Freq) const {
       if (!AttrFreqById.IsKey(Id)) {
         AttrFreqById.AddDat(Id, TInt(0));
       }
-      AttrFreqById[Id] += 1;
+      AttrFreqById(Id) += 1;
     }
     for (int i = 0; i < Node.StrAttrIds.Len(); i++) {
       TInt Id = Node.StrAttrIds[i];
       if (!AttrFreqById.IsKey(Id)) {
         AttrFreqById.AddDat(Id, TInt(0));
       }
-      AttrFreqById[Id] += 1;
+      AttrFreqById(Id) += 1;
     }
     NodeHI++;
   }
