@@ -946,23 +946,7 @@ void TNSparseNet::GroupByStrNodeVal(THash<TStr, TVec<TInt> >& Grouping, TStr &at
 }
 
 void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
-  Freq = THash<TStr, TInt> ();
-  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
-  while(!NodeHI.IsEnd()) {
-    TStrV Names;
-    IntAttrNameNI(NodeHI.GetKey(), Names);
-    for (int i = 0; i < Names.Len(); i++) {
-      if (!Freq.IsKey(Names[i])) {
-        Freq.AddDat(Names[i], TInt(1));
-      } else { 
-        TStr Name = Names[i];
-        int CurrFreq = Freq(Name);
-        Freq.AddDat(Names[i], CurrFreq+1);
-      }
-    }
-    NodeHI++;
-  }
-  /*THash<TInt, TInt> AttrFreqById;
+  THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TNode &Node = NodeHI.GetDat();
@@ -971,7 +955,7 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
       if (!AttrFreqById.IsKey(Id)) {
         AttrFreqById.AddDat(Id, TInt(0));
       }
-      AttrFreqById[Id] += 1;
+      AttrFreqById(Id) += 1;
     }
     NodeHI++;
   }
@@ -980,26 +964,10 @@ void TNSparseNet::GetIntKeyFreq(THash<TStr, TInt>& Freq) const{
     TStr Name = GetAttrNameN(FreqI.GetKey());
     Freq.AddDat(Name, FreqI.GetDat());
     FreqI++;
-  }*/
+  }
 }
 void TNSparseNet::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
   Freq = THash<TStr, TInt> ();
-  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
-  while(!NodeHI.IsEnd()) {
-    TStrV Names;
-    FltAttrNameNI(NodeHI.GetKey(), Names);
-    for (int i = 0; i < Names.Len(); i++) {
-      if (!Freq.IsKey(Names[i])) {
-        Freq.AddDat(Names[i], TInt(1));
-      } else { 
-        TStr Name = Names[i];
-        int CurrFreq = Freq(Name);
-        Freq.AddDat(Names[i], CurrFreq+1);
-      }
-    }
-    NodeHI++;
-  }
-  /*Freq = THash<TStr, TInt> ();
   THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
@@ -1018,27 +986,11 @@ void TNSparseNet::GetFltKeyFreq(THash<TStr, TInt>& Freq) const {
     TStr Name = GetAttrNameN(FreqI.GetKey());
     Freq.AddDat(Name, FreqI.GetDat());
     FreqI++;
-  }*/
+  }
 
 }
 void TNSparseNet::GetStrKeyFreq(THash<TStr, TInt>& Freq) const {
   Freq = THash<TStr, TInt> ();
-  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
-  while(!NodeHI.IsEnd()) {
-    TStrV Names;
-    StrAttrNameNI(NodeHI.GetKey(), Names);
-    for (int i = 0; i < Names.Len(); i++) {
-      if (!Freq.IsKey(Names[i])) {
-        Freq.AddDat(Names[i], TInt(1));
-      } else { 
-        TStr Name = Names[i];
-        int CurrFreq = Freq(Name);
-        Freq.AddDat(Names[i], CurrFreq+1);
-      }
-    }
-    NodeHI++;
-  }
-  /*Freq = THash<TStr, TInt> ();
   THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
@@ -1057,24 +1009,43 @@ void TNSparseNet::GetStrKeyFreq(THash<TStr, TInt>& Freq) const {
     TStr Name = GetAttrNameN(FreqI.GetKey());
     Freq.AddDat(Name, FreqI.GetDat());
     FreqI++;
-  }*/
+  }
 }
+
 void TNSparseNet::GetKeyFreq(THash<TStr, TInt>& Freq) const {
   Freq = THash<TStr, TInt> ();
+  THash<TInt, TInt> AttrFreqById;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
-    TStrV Names;
-    AttrNameNI(NodeHI.GetKey(), Names);
-    for (int i = 0; i < Names.Len(); i++) {
-      if (!Freq.IsKey(Names[i])) {
-        Freq.AddDat(Names[i], TInt(1));
-      } else { 
-        TStr Name = Names[i];
-        int CurrFreq = Freq(Name);
-        Freq.AddDat(Names[i], CurrFreq+1);
+    TNode &Node = NodeHI.GetDat();
+    for (int i = 0; i < Node.IntAttrIds.Len(); i++) {
+      TInt Id = Node.IntAttrIds[i];
+      if (!AttrFreqById.IsKey(Id)) {
+        AttrFreqById.AddDat(Id, TInt(0));
       }
+      AttrFreqById(Id) += 1;
+    }
+    for (int i = 0; i < Node.FltAttrIds.Len(); i++) {
+      TInt Id = Node.FltAttrIds[i];
+      if (!AttrFreqById.IsKey(Id)) {
+        AttrFreqById.AddDat(Id, TInt(0));
+      }
+      AttrFreqById[Id] += 1;
+    }
+    for (int i = 0; i < Node.StrAttrIds.Len(); i++) {
+      TInt Id = Node.StrAttrIds[i];
+      if (!AttrFreqById.IsKey(Id)) {
+        AttrFreqById.AddDat(Id, TInt(0));
+      }
+      AttrFreqById[Id] += 1;
     }
     NodeHI++;
+  }
+  THash<TInt, TInt>::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    Freq.AddDat(Name, FreqI.GetDat());
+    FreqI++;
   }
 
 }
