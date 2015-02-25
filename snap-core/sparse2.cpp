@@ -1249,3 +1249,57 @@ void TNEANetSparse2::GetKeyFreq(THash<TStr, TInt>& Freq) const {
   }
 
 }
+
+void TNEANetSparse2::GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const {
+  Freq = THash<TStr, TPair<TInt, TInt> >();
+  THash<TInt, TPair<TInt, TInt> > AttrFreqById;
+  
+  THash<TPair<TInt, TInt>, TInt >::TIter IntI = IntAttrsN.BegI();
+  while(!IntI.IsEnd()) {
+    TInt Id = IntI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Id)) {
+      TPair<TInt, TInt> Val(0, 0);
+      AttrFreqById.AddDat(Id, Val);
+    }
+    AttrFreqById(Id).Val1 += 1;
+    IntI++;
+  }
+
+  THash<TPair<TInt, TInt>, TFlt >::TIter FltI = FltAttrsN.BegI();
+  while(!FltI.IsEnd()) {
+    TInt Id = FltI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Id)) {
+      TPair<TInt, TInt> Val(0, 0);
+      AttrFreqById.AddDat(Id, Val);
+    }
+    AttrFreqById(Id).Val1 += 1;
+    FltI++;
+  }
+
+  THash<TPair<TInt, TInt>, TStr >::TIter StrI = StrAttrsN.BegI();
+  while(!StrI.IsEnd()) {
+    TInt Id = StrI.GetKey().GetVal2();
+    if (!AttrFreqById.IsKey(Id)) {
+      TPair<TInt, TInt> Val(0, 0);
+      AttrFreqById.AddDat(Id, Val);
+    }
+    if (StrI.GetDat() == TStr::GetNullStr()) {
+      AttrFreqById(Id).Val2 += 1;
+    }
+    AttrFreqById(Id).Val1 += 1;
+    StrI++;
+  }
+
+  THash<TInt, TPair<TInt, TInt> >::TIter FreqI = AttrFreqById.BegI();
+  while (!FreqI.IsEnd()) {
+    TStr Name = GetAttrNameN(FreqI.GetKey());
+    if (!Freq.IsKey(Name)) {
+      Freq.AddDat(Name, FreqI.GetDat());
+    } else {
+      Freq(Name).Val1 += FreqI.GetDat().Val1;
+      Freq(Name).Val2 += FreqI.GetDat().Val2;
+    }
+    FreqI++;
+  }
+
+}

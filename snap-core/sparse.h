@@ -887,6 +887,7 @@ public:
   void GetFltKeyFreq(THash<TStr, TInt>& Freq) const;
   void GetStrKeyFreq(THash<TStr, TInt>& Freq) const;
   void GetKeyFreq(THash<TStr, TInt>& Freq) const;
+  void GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const;
 
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
   static PNSparseNet GetSmallGraph();
