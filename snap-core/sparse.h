@@ -889,6 +889,10 @@ public:
   void GetKeyFreq(THash<TStr, TInt>& Freq) const;
   void GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const;
 
+  int GetAttrType(TStr &attr);
+
+  void GetAttrTypes(THash<TStr, TInt> &Types);
+
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
   static PNSparseNet GetSmallGraph();
   friend class TPt<TNSparseNet>;

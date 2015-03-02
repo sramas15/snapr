@@ -1098,3 +1098,61 @@ void TNSparseNet::GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const {
   }
 
 }
+
+int TNSparseNet::GetAttrType(TStr &attr) {
+  TInt AttrId = GetAttrIdN(attr, StrType);
+  int type = -1;
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while(!NodeHI.IsEnd()) {
+    TStr Val = NodeHI.GetDat().GetStrAttr(AttrId);
+    if (Val == TStr::GetNullStr()) continue;
+    if (Val.IsInt()) {
+      if (type == -1) type = IntType;
+    } else if (Val.IsFlt() && type != StrType) {
+      double flt = Val.GetFlt();
+      if (flt%1 == 0 && type == -1) {
+        type = IntType;
+      } else {
+        type = FltType;
+      }
+    } else {
+      type = StrType;
+    }
+    NodeHI++;
+  }
+  return type;
+}
+
+void TNSparseNet::GetAttrTypes(THash<TStr, TInt> &Types) {
+  while(!NodeHI.IsEnd()) {
+    TNode &Node = NodeHI.GetDat();
+    for (int i = 0; i < Node.StrAttrIds.Len(); i++) {
+      TInt Id = Node.StrAttrIds[i];
+      TStr Val = Node.StrAttrs[i];
+      int last_type = -1;
+      if (!Types.IsKey(Id)) {
+        Types.AddKey(Id, TInt(-1));
+      } else {
+        last_type = Types(Id);
+      }
+      int type = last_type;
+      if (Val == TStr::GetNullStr()) continue;
+      if (Val.IsInt()) {
+        if (type == -1) type = IntType;
+      } else if (Val.IsFlt() && type != StrType) {
+        double flt = Val.GetFlt();
+        if (flt%1 == 0 && type == -1) {
+          type = IntType;
+        } else {
+          type = FltType;
+        }
+      } else {
+        type = StrType;
+      }
+      if (type != last_type) {
+        Types(Id) = type;
+      }
+    }
+    NodeHI++;
+  }
+}

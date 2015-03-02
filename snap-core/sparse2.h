@@ -780,6 +780,10 @@ public:
 
   void GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const;
 
+  int GetAttrType(TStr &attr);
+
+  void GetAttrTypes(THash<TStr, TInt> &Types);
+
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();
   friend class TPt<TNEANetSparse2>;
