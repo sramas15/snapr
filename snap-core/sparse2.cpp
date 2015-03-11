@@ -1423,7 +1423,7 @@ int TNEANetSparse2::ConvertStrAttr(TStr &attr, int type) {
   while(!NodeHI.IsEnd()) {
     TInt NId = NodeHI.GetKey();
     TPair<TInt, TInt> OldKey(NId, AttrId);
-    TPair<TInt, TInt> NewKey(NId, type);
+    TPair<TInt, TInt> NewKey(NId, NewAttrId);
     if (StrAttrsN.IsKey(OldKey)) {
       TStr Val = StrAttrsN.GetDat(OldKey);
       if (Val != TStr::GetNullStr()) {
