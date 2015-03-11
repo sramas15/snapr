@@ -377,7 +377,10 @@ TInt TNEANetSparse2::GetIntAttrDatN(const int& NId, const TStr& attr) {
 TStr TNEANetSparse2::GetStrAttrDatN(const int& NId, const TStr& attr) {
   TInt AttrId = GetAttrIdN(attr, StrType);
   TPair<TInt, TInt> Key(NId, AttrId);
-  return StrAttrsN.GetDat(Key);
+  if (StrAttrsN.IsKey(Key)) {
+    return StrAttrsN.GetDat(Key);
+  }
+  return TStr::GetNullStr();
 }
 
 TFlt TNEANetSparse2::GetFltAttrDatN(const int& NId, const TStr& attr) {
