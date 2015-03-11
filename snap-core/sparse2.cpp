@@ -1412,7 +1412,7 @@ void TNEANetSparse2::ConvertToTSV(FILE *F, int num_attrs) {
 
 }
 
-int TNSparseNet::ConvertStrAttr(TStr &attr, int type) {
+int TNEANetSparse2::ConvertStrAttr(TStr &attr, int type) {
   if (type == StrType) return 0;
   int type_check = GetAttrType(attr);
   if (type_check != type || type_check == -1) return -1;
