@@ -346,6 +346,12 @@ private:
     TPair<TStr, TInt> key(attribute, type); 
     return AttrToIdN.IsKey(key);
   }
+  bool DelAttrIdN(const TStr& attribute, const TInt& type) {
+    TPair<TStr, TInt> key(attribute, type);
+    if (!AttrToIdN.IsKey(key)) { return false; }
+    AttrToIdN.DelKey(key);
+    return true; 
+  }
   TStr GetAttrNameN(const TInt AttrId) const { return AttrToIdN.GetKey(AttrId).GetVal1(); }
   TInt GetAttrTypeN(const TInt AttrId) const { return AttrToIdN.GetKey(AttrId).GetVal2(); }
 

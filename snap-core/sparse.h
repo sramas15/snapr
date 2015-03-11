@@ -470,6 +470,12 @@ private:
     TPair<TStr, TInt> key(attribute, type); 
     return AttrToIdN.IsKey(key);
   }
+  bool DelAttrIdN(const TStr& attribute, const TInt& type) {
+    TPair<TStr, TInt> key(attribute, type);
+    if (!AttrToIdN.IsKey(key)) { return false; }
+    AttrToIdN.DelKey(key);
+    return true; 
+  }
   TStr GetAttrNameN(const TInt AttrId) const { return AttrToIdN.GetKey(AttrId).GetVal1(); }
   TInt GetAttrTypeN(const TInt AttrId) const { return AttrToIdN.GetKey(AttrId).GetVal2(); }
 
@@ -895,6 +901,8 @@ public:
   void GetAttrTypes(THash<TStr, TInt> &Types);
 
   void ConvertToTSV(FILE *F, int num_attrs);
+
+  int ConvertStrAttr(TStr &attr, int type);
   //PTable ConvertToTTable(int num_attrs);
 
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph

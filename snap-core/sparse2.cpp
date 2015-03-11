@@ -1412,4 +1412,35 @@ void TNEANetSparse2::ConvertToTSV(FILE *F, int num_attrs) {
 
 }
 
+int TNSparseNet::ConvertStrAttr(TStr &attr, int type) {
+  if (type == StrType) return 0;
+  int type_check = GetAttrType(attr);
+  if (type_check != type || type_check == -1) return -1;
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  int AttrId = GetAttrIdN(attr, StrType);
+  if (AttrId == -1) return -1;
+  int NewAttrId = AddAttrIdN(attr, type);
+  while(!NodeHI.IsEnd()) {
+    TInt NId = NodeHI.GetKey();
+    TPair<TInt, TInt> OldKey(NId, AttrId);
+    TPair<TInt, TInt> NewKey(NId, type);
+    if (StrAttrsN.IsKey(OldKey)) {
+      TStr Val = StrAttrsN.GetDat(OldKey);
+      if (Val != TStr::GetNullStr()) {
+        if (type == IntType) {
+          TInt IVal = Val.GetInt();
+          IntAttrsN.AddDat(NewKey, IVal);
+        } else if (type == FltType) {
+          TFlt FVal = Val.GetFlt();
+          FltAttrsN.AddDat(NewKey, FVal);
+        }
+      }
+      StrAttrsN.DelKey(OldKey);
+    }
+    NodeHI++;
+  }
+  DelAttrIdN(attr, StrType);
+  return 0;
+}
+
 

@@ -1127,6 +1127,35 @@ int TNSparseNet::GetAttrType(TStr &attr) {
   return type;
 }
 
+int TNSparseNet::ConvertStrAttr(TStr &attr, int type) {
+  if (type == StrType) return 0;
+  if (GetAttrType(attr) != type) return -1;
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  int AttrId = GetAttrIdN(attr, StrType);
+  if (AttrId == -1) return -1;
+  int NewAttrId = AddAttrIdN(attr, type);
+  while(!NodeHI.IsEnd()) {
+    TNode& Node = NodeHI.GetDat();
+    int index = Node.GetStrAttrIndex(AttrId);
+    if (index != -1) {
+      TStr Val = Node.GetStrAttr(AttrId, index);
+      if (Val != TStr::GetNullStr()) {
+        Node.DelStrAttr(AttrId);
+        if (type == IntType) {
+         TInt IVal = Val.GetInt();
+          Node.AddIntAttr(NewAttrId, IVal);
+        } else if (type == FltType) {
+          TFlt FVal = Val.GetFlt();
+          Node.AddFltAttr(NewAttrId, FVal);
+        }
+      }
+    }
+    NodeHI++;
+  }
+  DelAttrIdN(attr, StrType);
+  return 0;
+}
+
 void TNSparseNet::GetAttrTypes(THash<TStr, TInt> &Types) {
   Types = THash<TStr, TInt> ();
   THash<TInt, TInt> TypeId;
