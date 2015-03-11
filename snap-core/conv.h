@@ -410,6 +410,90 @@ void AddAttrTable(PTable Table, PGraph& Graph, const TStr& SrcCol, const TStr& D
 }
 
 template<class PGraph>
+PTable ToTable(PGraph G, int num_attrs) {
+  enum { IntType, StrType, FltType };
+  TTableContext Context;
+  THash<TStr, TInt> Freq;
+  G->GetKeyFreq(Freq);
+  Freq.SortByDat(false);
+  THash<TStr, TInt>::TIter FreqI = Freq.BegI();
+  TVec<TStr> AttrNames;
+  TVec<TInt> Type;
+  Schema NetworkS;
+
+  for(int i = 0; i < num_attrs; i++) {
+    TStr AttrName = FreqI.GetKey();
+    AttrNames.Add(AttrName);
+    int type = G->GetAttrType(AttrName);
+    Type.Add(TInt(type));
+    if (type == StrType) {
+      NetworkS.Add(TPair<TStr, TAttrType>(AttrName, atStr));
+    } else if (type == FltType) {
+      NetworkS.Add(TPair<TStr, TAttrType>(AttrName, atFlt));
+    } else {
+      NetworkS.Add(TPair<TStr, TAttrType>(AttrName, atInt));
+    }
+    FreqI++;
+  }
+  PTable T = TTable::New(NetworkS, Context);
+  typename PGraph::TObj::TNodeI NodeHI = G->BegNI();
+  TInt Cnt = 0;
+  while(!NodeHI.IsEnd()) {
+    int IntColIdx = 0;
+    int FltColIdx = 0;
+    int StrColIdx = 0;
+    TInt IVal;
+    TStr SVal;
+    TFlt FVal;
+    for(int i = 0; i < AttrNames.Len(); i++) {
+      TStr Val = G->GetStrAttrDatN(NodeHI.GetId(), AttrNames[i]);
+      switch(Type[i]) {
+        case IntType:
+          IVal = TInt::Mn;
+          if (Val == TStr::GetNullStr()) {
+            IVal = Val.GetInt();
+          }
+          T->IntCols[IntColIdx].Add(IVal);
+          IntColIdx++;
+        break;
+        case StrType:
+          SVal = TStr::GetNullStr();
+          if (Val == TStr::GetNullStr()) {
+            SVal = Val;
+          }
+          T->AddStrVal(StrColIdx, SVal);
+          StrColIdx++;
+        break;
+        case FltType:
+          FVal = TFlt::Mn;
+          if (Val == TStr::GetNullStr()) {
+            FVal = Val.GetFlt();
+          }
+          T->FltCols[FltColIdx].Add(FVal);
+          FltColIdx++;
+        break;
+      }
+    }
+    NodeHI++;
+    Cnt += 1;
+  }
+  T->NumRows = Cnt;
+  T->NumValidRows = T->NumRows;
+
+  T->Next.Clr();
+  T->Next.Gen(Cnt);
+  for (uint64_t i = 0; i < Cnt-1; i++) {
+    T->Next[i] = i+1;
+  }
+  T->IsNextDirty = 0;
+  T->Next[Cnt-1] = TInt(-1); //-1 constant
+  T->LastValidRow = T->NumRows - 1;
+
+  T->InitIds();
+  return T;
+}
+
+template<class PGraph>
 PGraph ToNetwork(PTable Table, const TStr& SrcCol, const TStr& DstCol, TAttrAggr AggrPolicy)
 {
 	TStrV V;

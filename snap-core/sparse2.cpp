@@ -1306,7 +1306,7 @@ void TNEANetSparse2::GetKeyFreq(THash<TStr, TPair<TInt, TInt> >& Freq) const {
 
 int TNEANetSparse2::GetAttrType(TStr &attr) {
   TInt AttrId = GetAttrIdN(attr, StrType);
-  int type = -1
+  int type = -1;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while (!NodeHI.IsEnd()) {
     TPair<TInt, TInt> Key(NodeHI.GetKey(), AttrId);
@@ -1317,7 +1317,8 @@ int TNEANetSparse2::GetAttrType(TStr &attr) {
         if (type == -1) type = IntType;
       } else if (Val.IsFlt() && type != StrType) {
         double flt = Val.GetFlt();
-        if (flt%1 == 0 && type == -1) {
+        double intpart;
+        if (modf(flt, &intpart) == 0.0 && type == -1) {
           type = IntType;
         } else {
           type = FltType;
@@ -1332,34 +1333,77 @@ int TNEANetSparse2::GetAttrType(TStr &attr) {
 }
 
 void TNEANetSparse2::GetAttrTypes(THash<TStr, TInt> &Types) {
+  Types = THash<TStr, TInt> ();
+  THash<TInt, TInt> TypeId;
   THash<TPair<TInt, TInt>, TStr >::TIter StrI = StrAttrsN.BegI();
   while(!StrI.IsEnd()) {
-    TInt NId = StrI.GetKey().GetVal1();
-    TInt Id = StrI.GetKey().GetVal2();
+    TInt Id = StrI.GetKey().GetVal2(); //AttrId
     TStr Val = StrI.GetDat();
     int last_type = -1;
-    if (!Types.IsKey(Id)) {
-      Types.AddKey(Id, TInt(-1));
+    if (!TypeId.IsKey(Id)) {
+      TypeId.AddDat(Id, TInt(-1));
     } else {
-      last_type = Types(Id);
+      last_type = TypeId(Id);
     }
     int type = last_type;
     if (Val == TStr::GetNullStr()) continue;
     if (Val.IsInt()) {
       if (type == -1) type = IntType;
     } else if (Val.IsFlt() && type != StrType) {
-      double flt = Val.GetFlt();
-      if (flt%1 == 0 && type == -1) {
-        type = IntType;
-      } else {
-        type = FltType;
-      }
+      type = FltType;
     } else {
       type = StrType;
     }
     if (type != last_type) {
-      Types(Id) = type;
+      TypeId(Id) = type;
     }
     StrI++;
   }
+  THash<TInt, TInt>::TIter TypeI = TypeId.BegI();
+  while (!TypeI.IsEnd()) {
+    TStr Name = GetAttrNameN(TypeI.GetKey());
+    Types.AddDat(Name, TypeI.GetDat());
+    TypeI++;
+  }
 }
+
+//double flt = Val.GetFlt();
+      //double intpart;
+      //if (modf(flt, &intpart) == 0.0 && type != FltType) {
+      //  type = IntType;
+      //}
+
+void TNEANetSparse2::ConvertToTSV(FILE *F, int num_attrs) {
+  TStr NULL_STR("__null__");
+  THash<TStr, TInt> Freq;
+  GetKeyFreq(Freq);
+  Freq.SortByDat(false);
+  fprintf(F, "NId");
+  THash<TStr, TInt>::TIter FreqI = Freq.BegI();
+  TVec<TInt> AttrIds;
+  for(int i = 0; i < num_attrs; i++) {
+    fprintf(F, "\t%s", FreqI.GetKey().CStr());
+    AttrIds.Add(GetAttrIdN(FreqI.GetKey(), StrType));
+    FreqI++;
+  }
+  fprintf(F, "\n");
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while(!NodeHI.IsEnd()) {
+    fprintf(F, "%d", NodeHI.GetKey().Val);
+    for(int i = 0; i < AttrIds.Len(); i++) {
+      TNode& Node = NodeHI.GetDat();
+      TPair<TInt, TInt> Key(Node.GetId(), AttrIds[i]);
+      if (!StrAttrsN.IsKey(Key)) {
+        fprintf(F, "\t%s", NULL_STR.CStr());
+      } else {
+        TStr Val = StrAttrsN.GetDat(Key);
+        fprintf(F, "\t%s", Val.CStr());
+      }
+    }
+    fprintf(F, "\n");
+    NodeHI++;
+  }
+
+}
+
+

@@ -1110,7 +1110,8 @@ int TNSparseNet::GetAttrType(TStr &attr) {
       if (type == -1) type = IntType;
     } else if (Val.IsFlt() && type != StrType) {
       double flt = Val.GetFlt();
-      if (flt%1 == 0 && type == -1) {
+      double intpart;
+      if (modf(flt, &intpart) == 0.0 && type == -1) {
         type = IntType;
       } else {
         type = FltType;
@@ -1124,35 +1125,72 @@ int TNSparseNet::GetAttrType(TStr &attr) {
 }
 
 void TNSparseNet::GetAttrTypes(THash<TStr, TInt> &Types) {
+  Types = THash<TStr, TInt> ();
+  THash<TInt, TInt> TypeId;
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TNode &Node = NodeHI.GetDat();
     for (int i = 0; i < Node.StrAttrIds.Len(); i++) {
       TInt Id = Node.StrAttrIds[i];
       TStr Val = Node.StrAttrs[i];
       int last_type = -1;
-      if (!Types.IsKey(Id)) {
-        Types.AddKey(Id, TInt(-1));
+      if (!TypeId.IsKey(Id)) {
+        TypeId.AddDat(Id, TInt(-1));
       } else {
-        last_type = Types(Id);
+        last_type = TypeId(Id);
       }
       int type = last_type;
       if (Val == TStr::GetNullStr()) continue;
       if (Val.IsInt()) {
         if (type == -1) type = IntType;
       } else if (Val.IsFlt() && type != StrType) {
-        double flt = Val.GetFlt();
-        if (flt%1 == 0 && type == -1) {
-          type = IntType;
-        } else {
-          type = FltType;
-        }
+        type = FltType;
       } else {
         type = StrType;
       }
       if (type != last_type) {
-        Types(Id) = type;
+        TypeId(Id) = type;
       }
     }
     NodeHI++;
   }
+  THash<TInt, TInt>::TIter TypeI = TypeId.BegI();
+  while (!TypeI.IsEnd()) {
+    TStr Name = GetAttrNameN(TypeI.GetKey());
+    Types.AddDat(Name, TypeI.GetDat());
+    TypeI++;
+  }
 }
+
+void TNSparseNet::ConvertToTSV(FILE *F, int num_attrs) {
+  TStr NULL_STR("__null__");
+  THash<TStr, TInt> Freq;
+  GetKeyFreq(Freq);
+  Freq.SortByDat(false);
+  fprintf(F, "NId");
+  THash<TStr, TInt>::TIter FreqI = Freq.BegI();
+  TVec<TInt> AttrIds;
+  for(int i = 0; i < num_attrs; i++) {
+    fprintf(F, "\t%s", FreqI.GetKey().CStr());
+    AttrIds.Add(GetAttrIdN(FreqI.GetKey(), StrType));
+    FreqI++;
+  }
+  fprintf(F, "\n");
+  THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
+  while(!NodeHI.IsEnd()) {
+    fprintf(F, "%d", NodeHI.GetKey().Val);
+    for(int i = 0; i < AttrIds.Len(); i++) {
+      TNode& Node = NodeHI.GetDat();
+      int index = Node.GetStrAttrIndex(TInt(i));
+      if (index == -1) {
+        fprintf(F, "\t%s", NULL_STR.CStr());
+      } else {
+        fprintf(F, "\t%s", Node.GetStrAttr(TInt(i), index).CStr());
+      }
+    }
+    fprintf(F, "\n");
+    NodeHI++;
+  }
+
+}
+

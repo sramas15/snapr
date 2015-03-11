@@ -185,6 +185,7 @@ public:
     TNodeI& operator++ (int) { NodeHI++; return *this; }
     bool operator < (const TNodeI& NodeI) const { return NodeHI < NodeI.NodeHI; }
     bool operator == (const TNodeI& NodeI) const { return NodeHI == NodeI.NodeHI; }
+    bool IsEnd() { return NodeHI.IsEnd(); }
     /// Returns ID of the current node.
     int GetId() const { return NodeHI.GetDat().GetId(); }
     /// Returns degree of the current node, the sum of in-degree and out-degree.
@@ -892,6 +893,9 @@ public:
   int GetAttrType(TStr &attr);
 
   void GetAttrTypes(THash<TStr, TInt> &Types);
+
+  void ConvertToTSV(FILE *F, int num_attrs);
+  //PTable ConvertToTTable(int num_attrs);
 
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
   static PNSparseNet GetSmallGraph();
