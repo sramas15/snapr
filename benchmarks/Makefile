@@ -6,10 +6,9 @@ include ../Makefile.config
 
 ## Main application file
 BENCHMARKS = \
-	benchmark-pagerank \
-	benchmark-tonetwork \
-	benchmark-weightedpr \
-	benchmark-weightedpr-parallel \
+	benchmark-tsv \
+        benchmark-totable \
+        benchmark-json
 	\
 
 all: $(BENCHMARKS)
