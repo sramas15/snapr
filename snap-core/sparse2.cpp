@@ -1352,7 +1352,10 @@ void TNEANetSparse2::GetAttrTypes(THash<TStr, TInt> &Types) {
       last_type = TypeId(Id);
     }
     int type = last_type;
-    if (Val == TStr::GetNullStr()) continue;
+    if (Val == TStr::GetNullStr()) {
+      StrI++;
+      continue;
+    }
     if (Val.IsInt()) {
       if (type == -1) type = IntType;
     } else if (Val.IsFlt() && type != StrType) {
@@ -1418,10 +1421,10 @@ void TNEANetSparse2::ConvertToTSV(FILE *F, int num_attrs) {
 
 }
 
-int TNEANetSparse2::ConvertStrAttr(TStr &attr, int type) {
+int TNEANetSparse2::ConvertStrAttr(TStr &attr, int type, bool doCheck) {
   if (type == StrType) return 0;
   int type_check = GetAttrType(attr);
-  if (type_check != type || type_check == -1) return -1;
+  if (doCheck && (type_check != type || type_check == -1)) return -1;
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   int AttrId = GetAttrIdN(attr, StrType);
   if (AttrId == -1) return -1;
@@ -1449,4 +1452,12 @@ int TNEANetSparse2::ConvertStrAttr(TStr &attr, int type) {
   return 0;
 }
 
-
+void TNEANetSparse2::ConvertAllStrAttrs() {
+  THash<TStr, TInt> Types;
+  GetAttrTypes(Types);
+  THash<TStr, TInt>::TIter TypeI = Types.BegI();
+  while(!TypeI.IsEnd()) {
+    TStr Attr = TypeI.GetKey();
+    ConvertStrAttr(Attr, TypeI.GetDat(), false);
+  }
+}

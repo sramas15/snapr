@@ -791,7 +791,8 @@ public:
 
   void GetAttrTypes(THash<TStr, TInt> &Types);
   void ConvertToTSV(FILE *F, int num_attrs);
-  int ConvertStrAttr(TStr &attr, int type);
+  int ConvertStrAttr(TStr &attr, int type, bool doCheck=true);
+  void ConvertAllStrAttrs();
 
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNEANetSparse2::GetSmallGraph
   static PNEANetSparse2 GetSmallGraph();

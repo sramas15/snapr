@@ -902,7 +902,8 @@ public:
 
   void ConvertToTSV(FILE *F, int num_attrs);
 
-  int ConvertStrAttr(TStr &attr, int type);
+  int ConvertStrAttr(TStr &attr, int type, bool doCheck=true);
+  void ConvertAllStrAttrs();
   //PTable ConvertToTTable(int num_attrs);
 
   /// Returns a small multigraph on 5 nodes and 6 edges. ##TNSparseNet::GetSmallGraph
