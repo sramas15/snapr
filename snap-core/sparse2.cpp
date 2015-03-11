@@ -1324,7 +1324,7 @@ int TNEANetSparse2::GetAttrType(TStr &attr) {
       } else if (Val.IsFlt() && type != StrType) {
         double flt = Val.GetFlt();
         double intpart;
-        if (modf(flt, &intpart) == 0.0 && type == -1) {
+        if (modf(flt, &intpart) == 0.0 && type != FltType) {
           type = IntType;
         } else {
           type = FltType;
@@ -1356,7 +1356,13 @@ void TNEANetSparse2::GetAttrTypes(THash<TStr, TInt> &Types) {
     if (Val.IsInt()) {
       if (type == -1) type = IntType;
     } else if (Val.IsFlt() && type != StrType) {
-      type = FltType;
+      double flt = Val.GetFlt();
+      double intpart;
+      if (modf(flt, &intpart) == 0.0 && type != FltType) {
+        type = IntType;
+      } else {
+        type = FltType;
+      } 
     } else {
       type = StrType;
     }
