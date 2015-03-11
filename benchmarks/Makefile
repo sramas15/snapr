@@ -8,6 +8,7 @@ include ../Makefile.config
 BENCHMARKS = \
 	benchmark-tsv \
         benchmark-totable \
+        benchmark-converttype \
         benchmark-json
 	\
 
