@@ -450,7 +450,7 @@ PTable ToTable(PGraph G, int num_attrs) {
       switch(Type[i]) {
         case IntType:
           IVal = TInt::Mn;
-          if (Val == TStr::GetNullStr()) {
+          if (Val != TStr::GetNullStr()) {
             IVal = Val.GetInt();
           }
           T->IntCols[IntColIdx].Add(IVal);
@@ -458,7 +458,7 @@ PTable ToTable(PGraph G, int num_attrs) {
         break;
         case StrType:
           SVal = TStr::GetNullStr();
-          if (Val == TStr::GetNullStr()) {
+          if (Val != TStr::GetNullStr()) {
             SVal = Val;
           }
           T->AddStrVal(StrColIdx, SVal);
@@ -466,7 +466,7 @@ PTable ToTable(PGraph G, int num_attrs) {
         break;
         case FltType:
           FVal = TFlt::Mn;
-          if (Val == TStr::GetNullStr()) {
+          if (Val != TStr::GetNullStr()) {
             FVal = Val.GetFlt();
           }
           T->FltCols[FltColIdx].Add(FVal);
