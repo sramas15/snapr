@@ -1312,7 +1312,10 @@ int TNEANetSparse2::GetAttrType(TStr &attr) {
     TPair<TInt, TInt> Key(NodeHI.GetKey(), AttrId);
     if (StrAttrsN.IsKey(Key)) {
       TStr Val = StrAttrsN.GetDat(Key);
-      if (Val == TStr::GetNullStr()) continue;
+      if (Val == TStr::GetNullStr()) {
+        NodeHI++;
+        continue;
+      }
       if (Val.IsInt()) {
         if (type == -1) type = IntType;
       } else if (Val.IsFlt() && type != StrType) {

@@ -1105,7 +1105,10 @@ int TNSparseNet::GetAttrType(TStr &attr) {
   THash<TInt, TNode>::TIter NodeHI = NodeH.BegI();
   while(!NodeHI.IsEnd()) {
     TStr Val = NodeHI.GetDat().GetStrAttr(AttrId);
-    if (Val == TStr::GetNullStr()) continue;
+    if (Val == TStr::GetNullStr()) {
+      NodeHI++;
+      continue;
+    }
     if (Val.IsInt()) {
       if (type == -1) type = IntType;
     } else if (Val.IsFlt() && type != StrType) {
